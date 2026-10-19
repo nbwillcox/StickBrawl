@@ -251,57 +251,122 @@
     if (has('shades')) { ctx.fillStyle = '#1d1c1a'; ctx.fillRect(hx - 0.6, hy - 2.6, 6.2, 2.6); ctx.fillRect(hx - 5.4, hy - 2.2, 5, 0.9); ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.fillRect(hx + 0.6, hy - 2, 1.5, 0.8); }
   }
 
-  /* weapons in a hand-space where +y is the direction the forearm points */
+  /* ---------- weapons, crates, barrels and drums ---------- */
+  const OL = '#3a210c';
+  function nStick(ctx, x0, y0, x1, y1, wood, dark) {
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = OL; ctx.lineWidth = 3.9; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+    ctx.strokeStyle = wood; ctx.lineWidth = 2.6; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+    const dx = x1 - x0, dy = y1 - y0, L = Math.hypot(dx, dy) || 1, nx = -dy / L, ny = dx / L;
+    ctx.strokeStyle = dark; ctx.globalAlpha = 0.55; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.moveTo(x0 - nx * 0.7, y0 - ny * 0.7); ctx.lineTo(x1 - nx * 0.7, y1 - ny * 0.7); ctx.stroke(); ctx.globalAlpha = 1;
+    ctx.strokeStyle = '#1d1c1a'; ctx.lineWidth = 0.8;                                  /* grip wraps */
+    for (let k = 0.18; k < 0.5; k += 0.13) { const px = x0 + dx * k, py = y0 + dy * k; ctx.beginPath(); ctx.moveTo(px + nx * 1.3, py + ny * 1.3); ctx.lineTo(px - nx * 1.3, py - ny * 1.3); ctx.stroke(); }
+    ctx.fillStyle = '#9aa0a6'; ctx.beginPath(); ctx.arc(x1, y1, 1.5, 0, 6.3); ctx.fill(); ctx.strokeStyle = OL; ctx.lineWidth = 0.6; ctx.stroke();
+  }
   function weaponShape(ctx, type, f, pose) {
     ctx.lineJoin = 'round'; ctx.lineCap = 'round';
     if (type === 'bat') {
-      ctx.fillStyle = '#b07a3e'; ctx.strokeStyle = '#4a2c0f'; ctx.lineWidth = 0.9;
-      ctx.beginPath(); ctx.moveTo(-0.7, -5); ctx.lineTo(0.7, -5); ctx.lineTo(0.9, 9); ctx.lineTo(2.4, 17); ctx.lineTo(2.2, 27); ctx.quadraticCurveTo(0, 30, -2.2, 27); ctx.lineTo(-2.4, 17); ctx.lineTo(-0.9, 9); ctx.closePath(); ctx.fill(); ctx.stroke();
-      ctx.strokeStyle = 'rgba(70,40,10,0.5)'; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.moveTo(-1, 14); ctx.lineTo(-1.2, 25); ctx.stroke();
+      const wood = '#bb8344', dark = '#7d4d20';
+      ctx.beginPath(); ctx.moveTo(-0.9, -4); ctx.lineTo(0.9, -4); ctx.lineTo(1.0, 8); ctx.quadraticCurveTo(2.4, 16, 2.9, 24); ctx.quadraticCurveTo(3.3, 29.6, 0, 30.6); ctx.quadraticCurveTo(-3.3, 29.6, -2.9, 24); ctx.quadraticCurveTo(-2.4, 16, -1.0, 8); ctx.closePath();
+      ctx.fillStyle = wood; ctx.fill();
+      ctx.save(); ctx.clip(); ctx.fillStyle = dark; ctx.globalAlpha = 0.42; ctx.fillRect(0.5, -5, 4, 40); ctx.restore();
+      ctx.strokeStyle = OL; ctx.lineWidth = 0.95; ctx.stroke();
+      ctx.strokeStyle = '#1d1c1a'; ctx.lineWidth = 0.9;                                    /* taped grip */
+      for (let y = -3; y < 7; y += 2.2) { ctx.beginPath(); ctx.moveTo(-1, y); ctx.lineTo(1, y + 1.1); ctx.stroke(); }
+      ctx.fillStyle = wood; ctx.beginPath(); ctx.arc(0, -4.7, 1.7, 0, 6.3); ctx.fill(); ctx.strokeStyle = OL; ctx.lineWidth = 0.8; ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,242,215,0.75)'; ctx.lineWidth = 0.7; ctx.beginPath(); ctx.moveTo(-1.5, 14); ctx.lineTo(-2.0, 26); ctx.stroke();
+      ctx.strokeStyle = 'rgba(90,55,20,0.5)'; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(-0.4, 12); ctx.lineTo(-0.7, 20); ctx.moveTo(0.9, 18); ctx.lineTo(1.1, 27); ctx.stroke();
     } else if (type === 'knife') {
-      ctx.fillStyle = '#5a3a1c'; ctx.fillRect(-1.2, -3.5, 2.4, 5);
-      ctx.fillStyle = '#d6dde2'; ctx.strokeStyle = '#2b2a27'; ctx.lineWidth = 0.8;
-      ctx.beginPath(); ctx.moveTo(-1.8, 1.5); ctx.lineTo(1.8, 1.5); ctx.lineTo(1.4, 10); ctx.lineTo(0, 13); ctx.lineTo(-1.8, 9); ctx.closePath(); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = '#2b2a27'; ctx.fillRect(-2.6, 0.7, 5.2, 1.1);
-    } else if (type === 'crate') {
-      boxShape(ctx, 0, 1, 15);
+      ctx.fillStyle = '#5a3a1c'; ctx.strokeStyle = '#2b2a27'; ctx.lineWidth = 0.8;
+      ctx.beginPath(); ctx.rect(-1.4, -4, 2.8, 6.4); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#d9c9a0'; ctx.beginPath(); ctx.arc(0, -2.3, 0.5, 0, 6.3); ctx.arc(0, 0.3, 0.5, 0, 6.3); ctx.fill();
+      ctx.fillStyle = '#2b2a27'; ctx.fillRect(-3.1, 2.2, 6.2, 1.4);
+      ctx.beginPath(); ctx.moveTo(-1.9, 3.6); ctx.lineTo(1.9, 3.6); ctx.lineTo(1.6, 11.2); ctx.lineTo(0.2, 14.6); ctx.lineTo(-1.9, 10); ctx.closePath();
+      ctx.fillStyle = '#e4eaee'; ctx.fill();
+      ctx.save(); ctx.clip(); ctx.fillStyle = '#8c98a0'; ctx.globalAlpha = 0.5; ctx.fillRect(0.4, 3, 3, 13); ctx.restore();
+      ctx.strokeStyle = '#2b2a27'; ctx.lineWidth = 0.8; ctx.stroke();
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 0.9; ctx.beginPath(); ctx.moveTo(-0.7, 5); ctx.lineTo(-0.7, 9.4); ctx.stroke();
     } else if (type === 'nunchaku') {
-      const b = (pose.wSw || 0) * D;
-      ctx.strokeStyle = '#4a2c0f'; ctx.fillStyle = '#b07a3e'; ctx.lineWidth = 3;
-      ctx.beginPath(); ctx.moveTo(0, -3); ctx.lineTo(0, 9); ctx.stroke();
-      ctx.strokeStyle = '#b07a3e'; ctx.lineWidth = 1.8; ctx.beginPath(); ctx.moveTo(0, -3); ctx.lineTo(0, 9); ctx.stroke();
-      const jx = 0, jy = 9, cx = jx + Math.sin(b) * 5, cy = jy + Math.cos(b) * 5, ex = cx + Math.sin(b) * 11, ey = cy + Math.cos(b) * 11;
-      ctx.strokeStyle = '#555'; ctx.lineWidth = 0.9; ctx.beginPath(); ctx.moveTo(jx, jy); ctx.lineTo(cx, cy); ctx.stroke();
-      ctx.strokeStyle = '#4a2c0f'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(ex, ey); ctx.stroke();
-      ctx.strokeStyle = '#b07a3e'; ctx.lineWidth = 1.8; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(ex, ey); ctx.stroke();
+      const b = (pose.wSw || 0) * D, wood = '#b88040', dark = '#6e431a';
+      nStick(ctx, 0, 9, 0, -3, wood, dark);
+      const jx = 0, jy = 9, cx = jx + Math.sin(b) * 5.2, cy = jy + Math.cos(b) * 5.2, ex = cx + Math.sin(b) * 11, ey = cy + Math.cos(b) * 11;
+      ctx.strokeStyle = '#6b7075'; ctx.lineWidth = 0.9;                                    /* chain links */
+      for (let k = 0.2; k < 1; k += 0.3) { ctx.beginPath(); ctx.ellipse(jx + (cx - jx) * k, jy + (cy - jy) * k, 1.3, 0.8, -b, 0, 6.3); ctx.stroke(); }
+      nStick(ctx, cx, cy, ex, ey, wood, dark);
+    } else if (type === 'crate') {
+      boxShape(ctx, 0, 1, 16);
+    } else if (type === 'barrel') {
+      barrelShape(ctx, 0, 1, 14, 17);
     }
   }
 
   /* a wooden crate with its base at (x, y); used on the floor, overhead, and in the air */
   function boxShape(ctx, cx, y0, s) {
     const x0 = cx - s / 2;
-    ctx.fillStyle = '#c99a5a'; ctx.strokeStyle = '#3d2410'; ctx.lineWidth = 1.2;
-    ctx.fillRect(x0, y0, s, s); ctx.strokeRect(x0, y0, s, s);
-    ctx.lineWidth = 0.9; ctx.beginPath();
-    ctx.moveTo(x0, y0); ctx.lineTo(x0 + s, y0 + s); ctx.moveTo(x0 + s, y0); ctx.lineTo(x0, y0 + s);
-    ctx.moveTo(x0 + 2, y0 + 2.5); ctx.lineTo(x0 + s - 2, y0 + 2.5); ctx.moveTo(x0 + 2, y0 + s - 2.5); ctx.lineTo(x0 + s - 2, y0 + s - 2.5);
-    ctx.stroke();
-    A.hatch(ctx, x0 + s * 0.6, y0, s * 0.4, s, 2.2, 0.8, 0.22, '#3d2410');
+    ctx.fillStyle = '#cf9f5e'; ctx.fillRect(x0, y0, s, s);
+    ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, s, s); ctx.clip();
+    ctx.fillStyle = 'rgba(110,70,25,0.32)'; ctx.fillRect(x0 + s * 0.62, y0, s * 0.4, s);                    /* shaded side */
+    ctx.strokeStyle = 'rgba(90,55,20,0.55)'; ctx.lineWidth = 0.6;                                          /* plank seams + grain */
+    for (let k = 1; k < 4; k++) { ctx.beginPath(); ctx.moveTo(x0, y0 + s * k / 4); ctx.lineTo(x0 + s, y0 + s * k / 4); ctx.stroke(); }
+    ctx.restore();
+    ctx.strokeStyle = '#4a2c10'; ctx.lineWidth = 1.5; ctx.strokeRect(x0 + 1.4, y0 + 1.4, s - 2.8, s - 2.8);    /* frame */
+    ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(x0 + 1.6, y0 + 1.6); ctx.lineTo(x0 + s - 1.6, y0 + s - 1.6); ctx.stroke();   /* brace */
+    ctx.strokeStyle = OL; ctx.lineWidth = 1.2; ctx.strokeRect(x0, y0, s, s);
+    ctx.fillStyle = '#2b2a27';                                                                             /* nails */
+    for (const [nx, ny] of [[2.4, 2.4], [s - 2.4, 2.4], [2.4, s - 2.4], [s - 2.4, s - 2.4]]) { ctx.beginPath(); ctx.arc(x0 + nx, y0 + ny, 0.6, 0, 6.3); ctx.fill(); }
+    ctx.strokeStyle = 'rgba(255,240,205,0.7)'; ctx.lineWidth = 0.7; ctx.beginPath(); ctx.moveTo(x0 + 1, y0 + 0.8); ctx.lineTo(x0 + s * 0.5, y0 + 0.8); ctx.stroke();
+  }
+  function barrelShape(ctx, cx, y0, w, h) {
+    const l = cx - w / 2, r = cx + w / 2;
+    const body = () => { ctx.beginPath(); ctx.moveTo(l + 1, y0); ctx.quadraticCurveTo(l - 2.2, y0 + h / 2, l + 1, y0 + h); ctx.lineTo(r - 1, y0 + h); ctx.quadraticCurveTo(r + 2.2, y0 + h / 2, r - 1, y0); ctx.closePath(); };
+    body(); ctx.fillStyle = '#ac773b'; ctx.fill();
+    ctx.save(); body(); ctx.clip();
+    ctx.fillStyle = 'rgba(90,55,20,0.34)'; ctx.fillRect(cx + w * 0.16, y0 - 1, w, h + 2);
+    ctx.strokeStyle = 'rgba(70,40,15,0.6)'; ctx.lineWidth = 0.6;
+    for (let k = -2; k <= 2; k++) { ctx.beginPath(); ctx.moveTo(cx + k * w * 0.2, y0); ctx.quadraticCurveTo(cx + k * w * 0.27, y0 + h / 2, cx + k * w * 0.2, y0 + h); ctx.stroke(); }
+    ctx.restore();
+    ctx.strokeStyle = '#4b5057'; ctx.lineWidth = 1.5;
+    for (const k of [0.2, 0.8]) { const y = y0 + h * k; ctx.beginPath(); ctx.moveTo(l - 1.2, y); ctx.quadraticCurveTo(cx, y + 1.8, r + 1.2, y); ctx.stroke(); }
+    ctx.strokeStyle = OL; ctx.lineWidth = 1.1; body(); ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,240,205,0.65)'; ctx.lineWidth = 0.7; ctx.beginPath(); ctx.moveTo(l + 1.8, y0 + 2); ctx.lineTo(l + 1.4, y0 + h - 2); ctx.stroke();
   }
   A.crate = function (ctx, x, y, rot) {
-    ctx.save(); ctx.translate(x, y - 7.5); ctx.rotate((rot || 0) * D); boxShape(ctx, 0, -7.5, 15); ctx.restore();
+    ctx.save(); ctx.translate(x, y - 8); ctx.rotate((rot || 0) * D); boxShape(ctx, 0, -8, 16); ctx.restore();
   };
-  /* an oil drum that can be smashed; hp 0..1 darkens it as it takes hits */
-  A.drum = function (ctx, x, y, hit) {
+  A.barrel = function (ctx, x, y, rot) {
+    ctx.save(); ctx.translate(x, y - 8.5); ctx.rotate((rot || 0) * D); barrelShape(ctx, 0, -8.5, 14, 17); ctx.restore();
+  };
+  /* an oil drum that can be smashed; dmg 0..1 shows dents, rust and splits as it takes hits */
+  A.drum = function (ctx, x, y, hit, dmg) {
+    dmg = dmg || 0;
     ctx.save(); ctx.translate(x + (hit > 0 ? (Math.random() - 0.5) * 1.6 : 0), y);
-    ctx.fillStyle = '#7f95a3'; ctx.strokeStyle = '#26323a'; ctx.lineWidth = 1.3;
-    ctx.beginPath(); ctx.moveTo(-8, 0); ctx.lineTo(-8.6, -20); ctx.quadraticCurveTo(0, -23.4, 8.6, -20); ctx.lineTo(8, 0); ctx.quadraticCurveTo(0, 3, -8, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = 'rgba(50,42,30,0.0)';
+    A.contact(ctx, 0, 1, 12);
+    const body = () => { ctx.beginPath(); ctx.moveTo(-8, 0); ctx.lineTo(-8.6, -20); ctx.quadraticCurveTo(0, -23.4, 8.6, -20); ctx.lineTo(8, 0); ctx.quadraticCurveTo(0, 3, -8, 0); ctx.closePath(); };
+    body(); ctx.fillStyle = hit > 0 ? '#c9d6de' : '#7f95a3'; ctx.fill();
+    ctx.save(); body(); ctx.clip();
+    ctx.fillStyle = 'rgba(20,32,40,0.38)'; ctx.fillRect(2.5, -24, 8, 28);                                  /* shaded side */
+    ctx.fillStyle = '#d9d2c0'; ctx.fillRect(-9, -15, 18, 5);                                               /* hazard band */
+    ctx.strokeStyle = '#c62a1f'; ctx.lineWidth = 1.7; for (let k = -10; k < 10; k += 4) { ctx.beginPath(); ctx.moveTo(k, -10); ctx.lineTo(k + 4, -15); ctx.stroke(); }
+    if (dmg > 0.2) { ctx.fillStyle = 'rgba(130,70,30,0.45)'; ctx.beginPath(); ctx.ellipse(-3.5, -4, 3.4, 2.4, 0.4, 0, 6.3); ctx.fill(); }    /* rust */
+    ctx.restore();
+    ctx.strokeStyle = '#26323a'; ctx.lineWidth = 1.3; body(); ctx.stroke();
     ctx.fillStyle = '#9db0bc'; ctx.beginPath(); ctx.ellipse(0, -20, 8.6, 3, 0, 0, 6.3); ctx.fill(); ctx.stroke();
-    ctx.lineWidth = 1; ctx.beginPath();
-    ctx.moveTo(-8.4, -7); ctx.quadraticCurveTo(0, -4, 8.4, -7); ctx.moveTo(-8.5, -14); ctx.quadraticCurveTo(0, -11, 8.5, -14); ctx.stroke();
-    ctx.save(); ctx.beginPath(); ctx.moveTo(-8, 0); ctx.lineTo(-8.6, -20); ctx.lineTo(8.6, -20); ctx.lineTo(8, 0); ctx.closePath(); ctx.clip();
-    A.hatch(ctx, 2, -24, 8, 28, 2, 0.9, 0.35, '#26323a'); ctx.restore();
-    ctx.fillStyle = '#c62a1f'; ctx.fillRect(-3, -17, 6, 4);
+    ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(-8.4, -7); ctx.quadraticCurveTo(0, -4, 8.4, -7); ctx.moveTo(-8.5, -17); ctx.quadraticCurveTo(0, -14, 8.5, -17); ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.moveTo(-6.2, -18); ctx.lineTo(-6.6, -2); ctx.stroke();
+    ctx.strokeStyle = '#1b262c'; ctx.lineWidth = 0.9;                                                      /* dents and splits */
+    if (dmg > 0.25) { ctx.beginPath(); ctx.moveTo(-2, -9); ctx.lineTo(1, -6); ctx.lineTo(0, -3); ctx.stroke(); }
+    if (dmg > 0.5) { ctx.beginPath(); ctx.moveTo(3, -19); ctx.lineTo(1.5, -14); ctx.lineTo(4.4, -10); ctx.lineTo(3, -6); ctx.stroke(); ctx.beginPath(); ctx.arc(-4.5, -12, 2, 0.4, 3.6); ctx.stroke(); }
+    if (dmg > 0.75) { ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(-6, -19); ctx.lineTo(-3.4, -12); ctx.lineTo(-5.4, -6); ctx.lineTo(-3, -1); ctx.stroke(); }
+    ctx.restore();
+  };
+  /* a little twinkle that marks something you can pick up */
+  A.sparkle = function (ctx, x, y, t) {
+    const s = 2.4 + 1.6 * (0.5 + 0.5 * Math.sin(t * 6)), a = 0.55 + 0.45 * Math.sin(t * 6 + 1);
+    ctx.save(); ctx.translate(x, y); ctx.globalAlpha = a; ctx.lineCap = 'round';
+    ctx.strokeStyle = C.INK; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(-s, 0); ctx.lineTo(s, 0); ctx.moveTo(0, -s); ctx.lineTo(0, s); ctx.stroke();
+    ctx.strokeStyle = '#ffd23a'; ctx.lineWidth = 1.2; ctx.stroke();
+    ctx.lineWidth = 0.9; ctx.strokeStyle = '#e8b81f'; ctx.beginPath(); ctx.moveTo(-s * 0.55, -s * 0.55); ctx.lineTo(s * 0.55, s * 0.55); ctx.moveTo(-s * 0.55, s * 0.55); ctx.lineTo(s * 0.55, -s * 0.55); ctx.stroke();
     ctx.restore();
   };
 

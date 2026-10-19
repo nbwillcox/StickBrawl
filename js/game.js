@@ -24,7 +24,7 @@
     Game.introT = 0; Game.bossT = 0; Game.clearT = 0; Game.cleared = false; Game.respawnT = 0; Game.timeLeft = Game.level.time || C.STAGE_TIME; Game.bossBar = null; Game.lastHitE = null; Game.lastHitT = 0;
     FX.reset();
     Game.scenery = [];
-    for (const w of lv.waves) for (const it of (w.items || [])) if (!F.WEAPON[it.t] || it.t === 'crate') Game.scenery.push(it);
+    for (const w of lv.waves) for (const it of (w.items || [])) if (!F.WEAPON[it.t] || F.HEAVY[it.t]) Game.scenery.push(it);
     Game.scenery.sort((a, b) => a.x - b.x);
     const p = new F.Fighter(Game, F.PLAYER, lv.start.x, lv.start.y);
     p.hp = p.maxhp = C.PLAYER_HP;
@@ -76,8 +76,8 @@
   Game.throwWeapon = function (f) {
     const w = f.weapon; f.weapon = null;
     const knife = w.type === 'knife';
-    const crate = w.type === 'crate';
-    Game.projs.push({ type: w.type, uses: w.uses, x: f.x + f.face * 10, y: f.y, z: f.z + (crate ? 36 : 24), vx: f.face * (knife ? 270 : crate ? 190 : 210), vz: knife ? 5 : crate ? 20 : 40, rot: crate ? 0 : f.face > 0 ? 0 : 180, team: f.team, owner: f, dmg: knife ? 6 : crate ? 6 : w.type === 'bat' ? 5 : 3, spin: !knife && !crate, hit: false });
+    const crate = !!F.HEAVY[w.type], barrel = w.type === 'barrel';
+    Game.projs.push({ type: w.type, uses: w.uses, x: f.x + f.face * 10, y: f.y, z: f.z + (crate ? 36 : 24), vx: f.face * (knife ? 270 : barrel ? 175 : crate ? 190 : 210), vz: knife ? 5 : crate ? 20 : 40, rot: crate ? 0 : f.face > 0 ? 0 : 180, team: f.team, owner: f, dmg: knife ? 6 : barrel ? 7 : crate ? 6 : w.type === 'bat' ? 5 : 3, spin: !knife, spinRate: crate ? 480 : 900, hit: false });
     A.sfx.throw();
   };
 
@@ -109,9 +109,9 @@
   };
   function hurtProp(pr, n, dir) {
     pr.hp -= n; pr.flash = 0.12;
-    FX.spark(pr.x, pr.y + 0.5, 12, 0.8); FX.debris(pr.x, pr.y, 14, dir || 1, 3, '#4a5a66'); A.sfx.punch(); FX.freeze(0.04); FX.addShake(1.5);
+    FX.spark(pr.x, pr.y + 0.5, 12, 0.8); FX.debris(pr.x, pr.y, 14, dir || 1, 4, '#4a5a66', 3); A.sfx.punch(); FX.freeze(0.04); FX.addShake(1.5);
     if (pr.hp <= 0) {
-      FX.debris(pr.x, pr.y, 10, 1, 8, '#4a5a66'); FX.debris(pr.x, pr.y, 10, -1, 8, '#4a5a66'); FX.dust(pr.x, pr.y, 6, true); A.sfx.snap(); FX.addShake(3);
+      FX.debris(pr.x, pr.y, 10, 1, 8, '#4a5a66', 3.5); FX.debris(pr.x, pr.y, 10, -1, 8, '#4a5a66', 3.5); FX.decal(pr.x, pr.y, '#4a5a66', 6, false); FX.dust(pr.x, pr.y, 6, true); A.sfx.snap(); FX.addShake(3);
       if (pr.drop) {
         if (pr.drop === 'apple' || pr.drop === 'chicken') Game.items.push({ kind: 'food', type: pr.drop, x: pr.x, y: pr.y, z: 24, vz: 60, vx: 0, t: 0 });
         else Game.items.push({ kind: 'weapon', type: pr.drop, uses: F.WEAPON[pr.drop].uses, x: pr.x, y: pr.y, z: 24, vz: 60, vx: 0, rot: U.rand(-40, 40), taken: false, t: 0 });
@@ -131,7 +131,7 @@
     else if (v.team === 'p') { Game.hudHurt = 0.4; }
     if (att.weapon && mv.wep) {
       att.weapon.uses--;
-      if (att.weapon.uses <= 0) { FX.debris(att.x + att.face * 20, att.y, att.z + 18, att.face, 7, '#8a5a2b'); A.sfx.snap(); att.weapon = null; }
+      if (att.weapon.uses <= 0) { FX.debris(att.x + att.face * 20, att.y, att.z + 18, att.face, 7, '#8a5a2b', 4); FX.decal(att.x + att.face * 20, att.y, '#8a5a2b', 3, true); A.sfx.snap(); att.weapon = null; }
     }
     if (v.hp <= 0 && !v.killed) {
       v.killed = true;
@@ -172,7 +172,7 @@
     Game.waveActive = true; Game.goT = 0;
     Game.queue = (w.enemies || []).map((s) => ({ k: s.k, side: s.side, t: s.d }));
     /* the weapons a wave lists are carried in by its enemies (never the bosses), not dropped from the sky */
-    const arms = (w.items || []).filter((it) => F.WEAPON[it.t] && it.t !== 'crate');
+    const arms = (w.items || []).filter((it) => F.WEAPON[it.t] && !F.HEAVY[it.t]);
     const pool = Game.queue.filter((q) => !E.DEFS[q.k].boss);
     for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = pool[i]; pool[i] = pool[j]; pool[j] = t; }
     for (let i = 0; i < arms.length && i < pool.length; i++) pool[i].w = arms[i].t;
@@ -328,11 +328,13 @@
       }
     }
   }
+  /* a crate or barrel breaks: planks fly, a few lie on the floor for a while */
+  function smashWood(x, y, z, dir) { FX.debris(x, y, z, dir, 8, '#8a5a2b', 5); FX.debris(x, y, z, -dir, 4, '#8a5a2b', 3.5); FX.decal(x, y, '#8a5a2b', 5, true); FX.dust(x, y, 3); A.sfx.snap(); FX.addShake(2); }
   function updateProjs(dt) {
     for (let i = Game.projs.length - 1; i >= 0; i--) {
       const q = Game.projs[i];
       q.x += q.vx * dt; q.z += q.vz * dt; q.vz -= 260 * dt;
-      if (q.spin) q.rot += (q.vx > 0 ? 1 : -1) * 900 * dt;
+      if (q.spin) q.rot += (q.vx > 0 ? 1 : -1) * (q.spinRate || 900) * dt;
       let done = false;
       const targets = q.team === 'p' ? Game.enemies : [Game.player];
       for (const v of targets) {
@@ -341,16 +343,16 @@
           const mv = { dmg: q.dmg, kd: q.type !== 'nunchaku', kdv: 90, stun: 0.35, hs: 0.06, sh: 2.5, snd: q.type === 'knife' ? 'stab' : 'punchH' };
           v.takeHit(q.owner, mv, Game);
           q.uses = Math.max(1, q.uses - 1);
-          if (q.type === 'crate') { FX.debris(q.x, q.y, q.z, U.sign(q.vx), 9, '#8a5a2b'); A.sfx.snap(); }
+          if (F.HEAVY[q.type]) smashWood(q.x, q.y, q.z, U.sign(q.vx));
           else Game.items.push({ kind: 'weapon', type: q.type, uses: q.uses, x: v.x, y: v.y, z: v.z + 20, vz: 50, vx: -U.sign(q.vx) * 20, rot: q.rot, taken: false, t: 0 });
           done = true; break;
         }
       }
       if (!done && q.team === 'p') {
-        for (const pr of Game.props) if (pr.hp > 0 && Math.abs(pr.x - q.x) < 11 && Math.abs(pr.y - q.y) < 10 && q.z < 26) { hurtProp(pr, q.dmg >= 5 ? 3 : 2, U.sign(q.vx)); if (q.type === 'crate') { FX.debris(q.x, q.y, q.z, U.sign(q.vx), 9, '#8a5a2b'); A.sfx.snap(); } else Game.items.push({ kind: 'weapon', type: q.type, uses: q.uses, x: q.x, y: q.y, z: 14, vz: 40, vx: -U.sign(q.vx) * 20, rot: q.rot, taken: false, t: 0 }); done = true; break; }
+        for (const pr of Game.props) if (pr.hp > 0 && Math.abs(pr.x - q.x) < 11 && Math.abs(pr.y - q.y) < 10 && q.z < 26) { hurtProp(pr, q.dmg >= 5 ? 3 : 2, U.sign(q.vx)); if (F.HEAVY[q.type]) smashWood(q.x, q.y, q.z, U.sign(q.vx)); else Game.items.push({ kind: 'weapon', type: q.type, uses: q.uses, x: q.x, y: q.y, z: 14, vz: 40, vx: -U.sign(q.vx) * 20, rot: q.rot, taken: false, t: 0 }); done = true; break; }
       }
       if (!done && (q.z <= 0 || q.x < Game.camX - 40 || q.x > Game.camX + C.W + 40)) {
-        if (q.type === 'crate') { if (q.z <= 0) { FX.debris(q.x, q.y, 4, 1, 8, '#8a5a2b'); A.sfx.snap(); } }
+        if (F.HEAVY[q.type]) { if (q.z <= 0) smashWood(q.x, q.y, 4, 1); }
         else if (q.z <= 0) Game.items.push({ kind: 'weapon', type: q.type, uses: q.uses, x: q.x, y: q.y, z: 0, vz: 0, vx: 0, rot: q.rot % 360, taken: false, t: 0 });
         done = true; FX.dust(q.x, q.y, 2);
       }
@@ -382,13 +384,14 @@
     if (Game.player) list.push({ y: Game.player.y + 0.01, f: Game.player });
     for (const q of Game.projs) list.push({ y: q.y + 2, q });
     list.sort((a, b) => a.y - b.y);
+    FX.drawDecals(ctx, cam);
     /* shadows first so nothing is covered by another character's shadow */
     for (const d of list) if (d.f && d.f.state !== 'dead') ART.shadow(ctx, d.f, cam);
     for (const it of Game.items) if (it.kind === 'weapon' && it.z < 2) { ctx.save(); ctx.globalAlpha = 0.18; ctx.fillStyle = C.INK; ctx.beginPath(); ctx.ellipse(it.x - cam, it.y + 0.5, 9, 2.2, 0, 0, 6.3); ctx.fill(); ctx.restore(); }
     for (const d of list) {
-      if (d.pr) { ART.drum(ctx, d.pr.x - cam, d.pr.y, d.pr.flash); }
+      if (d.pr) { ART.drum(ctx, d.pr.x - cam, d.pr.y, d.pr.flash, 1 - d.pr.hp / 4); }
       else if (d.it) drawItem(ctx, d.it, cam);
-      else if (d.q) { const q = d.q; if (q.type === 'crate') ART.crate(ctx, q.x - cam, q.y - q.z + 7, q.rot); else ART.weaponIcon(ctx, q.type, q.x - cam, q.y - q.z + 8, q.rot, 1); }
+      else if (d.q) { const q = d.q; if (q.type === 'crate') ART.crate(ctx, q.x - cam, q.y - q.z + 7, q.rot); else if (q.type === 'barrel') ART.barrel(ctx, q.x - cam, q.y - q.z + 7, q.rot); else ART.weaponIcon(ctx, q.type, q.x - cam, q.y - q.z + 8, q.rot, 1); }
       else drawFighter(ctx, d.f, cam);
     }
     FX.draw(ctx, cam);
@@ -400,11 +403,10 @@
   function drawItem(ctx, it, cam) {
     const sx = it.x - cam, sy = it.y - it.z;
     if (it.kind === 'food') { const bob = Math.sin(it.t * 4) * 1.2; ART.food(ctx, it.type, sx, sy + bob); return; }
-    if (it.type === 'crate') ART.crate(ctx, sx, sy, it.z < 1 ? 0 : it.t * 300); else
+    if (it.type === 'crate') ART.crate(ctx, sx, sy, it.z < 1 ? 0 : it.t * 300); else if (it.type === 'barrel') ART.barrel(ctx, sx, sy, it.z < 1 ? 0 : it.t * 300); else
     ART.weaponIcon(ctx, it.type, sx, sy + 2, it.z < 1 ? 78 + (it.rot || 0) * 0.3 : (it.rot || 0) + it.t * 400, 1);
     if (it.z < 1 && !it.taken) {
-      const a = 0.5 + 0.5 * Math.sin(it.t * 5);
-      ctx.save(); ctx.globalAlpha = 0.4 + a * 0.4; ctx.strokeStyle = '#e8b81f'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(sx, sy - 3, 9 + a * 1.5, 0.3, 2.8); ctx.stroke(); ctx.beginPath(); ctx.arc(sx, sy - 3, 9 + a * 1.5, 3.5, 6); ctx.stroke(); ctx.restore();
+      ART.sparkle(ctx, sx + 6, sy - (F.HEAVY[it.type] ? 21 : 12), it.t);
     }
   }
   function drawFighter(ctx, f, cam) {
@@ -435,6 +437,7 @@
     else if (e.code === 'Digit8') Game.addItem('nunchaku', p.x + 40, p.y);
     else if (e.code === 'Digit9') Game.addItem('chicken', p.x + 40, p.y);
     else if (e.code === 'Digit0') Game.addItem('crate', p.x + 40, p.y);
+    else if (e.code === 'KeyB') Game.addItem('barrel', p.x + 40, p.y);
     else if (e.code === 'KeyG') Game.addItem('drum', p.x + 40, p.y, 'knife');
     else if (e.code === 'KeyH') p.hp = p.maxhp;
     else if (e.code === 'KeyE') { for (const q of Game.enemies) { q.hp = 0; q.dying = true; q.knock(1, 60, p); } }

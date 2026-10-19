@@ -45,11 +45,11 @@
       name: 'THE DOCKS', time: 360, sub: 'LEVEL 4', width: 2260, seed: 13, theme: 'docks', music: 'docks', start: { x: 70, y: 214 },
       waves: [
         { at: 0, enemies: [e('sailor', 'r', 0.2), e('sailor', 'r', 1.4)] },
-        { at: 340, items: [it('crate', 540, 236), it('drum', 480, 198, 'apple'), it('bat', 690, 224)], enemies: [e('sailor', 'r', 0), e('thug', 'l', 0.6), e('thug', 'r', 2.4)] },
-        { at: 760, items: [it('knife', 940, 214), it('crate', 1080, 238), it('drum', 900, 200, 'knife')], enemies: [e('sailor', 'l', 0), e('sailor', 'r', 0.4), e('bruiser', 'r', 2.6), e('ninja', 'l', 4)] },
-        { at: 1180, items: [it('crate', 1320, 230), it('drum', 1400, 198, 'chicken'), it('bat', 1500, 236)], enemies: [e('sailor', 'l', 0), e('sailor', 'r', 0.5), e('masked', 'r', 2), e('masked', 'l', 2.8), e('bruiser', 'l', 5)] },
+        { at: 340, items: [it('barrel', 540, 236), it('drum', 480, 198, 'apple'), it('bat', 690, 224)], enemies: [e('sailor', 'r', 0), e('thug', 'l', 0.6), e('thug', 'r', 2.4)] },
+        { at: 760, items: [it('knife', 940, 214), it('barrel', 1080, 238), it('drum', 900, 200, 'knife')], enemies: [e('sailor', 'l', 0), e('sailor', 'r', 0.4), e('bruiser', 'r', 2.6), e('ninja', 'l', 4)] },
+        { at: 1180, items: [it('barrel', 1320, 230), it('drum', 1400, 198, 'chicken'), it('bat', 1500, 236)], enemies: [e('sailor', 'l', 0), e('sailor', 'r', 0.5), e('masked', 'r', 2), e('masked', 'l', 2.8), e('bruiser', 'l', 5)] },
         { at: 1500, mini: true, items: [it('apple', 1700, 224)], enemies: [e('skipper', 'r', 0.3), e('sailor', 'l', 3), e('sailor', 'r', 5), e('thug', 'l', 8)] },
-        { at: 1780, boss: true, items: [it('crate', 1940, 236), it('bat', 2040, 222), it('drum', 1990, 200, 'chicken')], enemies: [e('harbor', 'r', 0.6), e('bruiser', 'l', 3), e('sailor', 'r', 7), e('ninja', 'l', 11)] },
+        { at: 1780, boss: true, items: [it('barrel', 1940, 236), it('bat', 2040, 222), it('drum', 1990, 200, 'chicken')], enemies: [e('harbor', 'r', 0.6), e('bruiser', 'l', 3), e('sailor', 'r', 7), e('ninja', 'l', 11)] },
       ],
     },
     {
@@ -57,7 +57,7 @@
       waves: [
         { at: 0, enemies: [e('agent', 'r', 0.2), e('agent', 'r', 1.2), e('masked', 'l', 2.6)] },
         { at: 340, items: [it('knife', 560, 226), it('drum', 480, 198, 'apple')], enemies: [e('agent', 'r', 0), e('agent', 'l', 0.6), e('ninja', 'r', 3), e('karateka', 'l', 4)] },
-        { at: 760, items: [it('crate', 920, 234), it('bat', 1040, 222), it('drum', 960, 198, 'knife')], enemies: [e('bruiser', 'l', 0), e('agent', 'r', 0.5), e('agent', 'r', 2.2), e('ninja', 'l', 3.5)] },
+        { at: 760, items: [it('barrel', 920, 234), it('bat', 1040, 222), it('drum', 960, 198, 'knife')], enemies: [e('bruiser', 'l', 0), e('agent', 'r', 0.5), e('agent', 'r', 2.2), e('ninja', 'l', 3.5)] },
         { at: 1180, items: [it('nunchaku', 1340, 218), it('chicken', 1560, 232), it('crate', 1420, 238)], enemies: [e('karateka', 'l', 0), e('karateka', 'r', 0.4), e('agent', 'r', 2.4), e('agent', 'l', 3), e('bruiser', 'r', 5)] },
         { at: 1500, mini: true, items: [it('apple', 1700, 222)], enemies: [e('bodyguard', 'r', 0.3), e('agent', 'l', 3), e('agent', 'r', 5), e('ninja', 'l', 8)] },
         { at: 1780, boss: true, items: [it('chicken', 1960, 230), it('bat', 2060, 222), it('drum', 2000, 198, 'chicken')], enemies: [e('kingpin', 'r', 0.6), e('ninja', 'l', 4), e('agent', 'r', 9)] },

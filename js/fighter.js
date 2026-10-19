@@ -110,8 +110,9 @@
     e_gknee: { dmg: 1, reach: 20, snd: 'knee', hs: 0.05, sh: 2 },
     knee: { dmg: 3, reach: 20, snd: 'knee', hs: 0.06, sh: 2 },
   };
-  const WEAPON = { crate: { uses: 1, mv: 'throwW', emv: 'throwW' }, bat: { uses: 9, mv: 'bat', emv: 'e_bat' }, nunchaku: { uses: 16, mv: 'nun1', emv: 'e_nun' }, knife: { uses: 8, mv: 'knife', emv: 'e_knife' } };
-  const WEAPON_POSE = { crate: 'carry', bat: 'batI', knife: 'knI', nunchaku: 'nuI' };
+  const HEAVY = { crate: 1, barrel: 1 };
+  const WEAPON = { crate: { uses: 1, mv: 'throwW', emv: 'throwW' }, barrel: { uses: 1, mv: 'throwW', emv: 'throwW' }, bat: { uses: 9, mv: 'bat', emv: 'e_bat' }, nunchaku: { uses: 16, mv: 'nun1', emv: 'e_nun' }, knife: { uses: 8, mv: 'knife', emv: 'e_knife' } };
+  const WEAPON_POSE = { crate: 'carry', barrel: 'carry', bat: 'batI', knife: 'knI', nunchaku: 'nuI' };
 
   const PLAYER = {
     name: 'YOU', team: 'p', speed: 76, hp: C.PLAYER_HP, canGrab: true,
@@ -278,7 +279,7 @@
     }
 
     groundUpdate(dt, g, I) {
-      const sp = this.def.speed * (this.speedMul || 1) * (this.weapon && this.weapon.type === 'crate' ? 0.85 : 1);
+      const sp = this.def.speed * (this.speedMul || 1) * (this.weapon && HEAVY[this.weapon.type] ? 0.85 : 1);
       /* actions first */
       if (I.act) {
         const a = I.act; I.act = null;
@@ -492,5 +493,5 @@
     }
   }
 
-  G.fighter = { Fighter, MOVES, WEAPON, PLAYER, POSES, lerpPose };
+  G.fighter = { Fighter, MOVES, WEAPON, HEAVY, PLAYER, POSES, lerpPose };
 })((window.SGS = window.SGS || {}));

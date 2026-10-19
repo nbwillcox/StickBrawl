@@ -52,7 +52,7 @@
   }
 
   function reachOf(e) {
-    if (e.weapon) { if (e.weapon.type === 'crate') return 110; const m = F.MOVES[F.WEAPON[e.weapon.type].emv]; return m.reach; }
+    if (e.weapon) { if (F.HEAVY[e.weapon.type]) return 110; const m = F.MOVES[F.WEAPON[e.weapon.type].emv]; return m.reach; }
     return e.def.reach;
   }
 

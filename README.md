@@ -32,7 +32,7 @@ Play in landscape. A floating stick on the left walks (up and down walk you alon
 - **Baseball bat:** slow, heavy, knocks down.
 - **Nunchaku:** fast two-hit combo.
 - **Knife:** quick stab; thrown it flies straight and fast.
-- **Crate:** carry it overhead (a bit slower) and throw it.
+- **Crate and barrel:** carry it overhead (a bit slower) and throw it; it breaks and leaves planks on the floor. The barrel hits harder than the crate.
 
 Enemies fight like you: a telegraphed opener, then a 2 or 3 hit punch or kick combo that only continues if the hit before it landed, ending in a knockdown. Big bosses skip the light stuff and use heavy attacks that always knock you down. Bosses have their own moves (slam, charge) and get enraged at half health. Regular enemies can grab you from the front: mash the buttons to break free.
 

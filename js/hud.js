@@ -30,6 +30,20 @@
     if (!p) return;
     /* small pencil plates so the HUD stays readable over any backdrop */
     plate(ctx, 3, 3, 224, 40); plate(ctx, C.W / 2 - 56, 3, 112, 17); plate(ctx, C.W - 98, 3, 95, 21);
+    /* the weapon in your hands, and how many hits it has left */
+    if (p.weapon) {
+      const W0 = G.fighter.WEAPON[p.weapon.type], heavy = G.fighter.HEAVY[p.weapon.type];
+      plate(ctx, 3, C.H - 30, heavy ? 44 : 86, 27);
+      if (p.weapon.type === 'crate') ART.crate(ctx, 20, C.H - 8, 0); else if (p.weapon.type === 'barrel') ART.barrel(ctx, 20, C.H - 8, 0);
+      else {
+        ART.weaponIcon(ctx, p.weapon.type, 12, C.H - 14, -90, 0.7);
+        const frac = U.clamp(p.weapon.uses / W0.uses, 0, 1), bx = 38, by = C.H - 20;
+        ctx.fillStyle = 'rgba(40,36,30,0.16)'; ctx.fillRect(bx, by, 44, 6);
+        ctx.fillStyle = frac > 0.3 ? '#6b8f3a' : '#c62a1f'; ctx.fillRect(bx, by, 44 * frac, 6);
+        ART.hatch(ctx, bx, by, 44 * frac, 6, 1.6, 0.8, 0.3, '#2b2a27');
+        ctx.strokeStyle = C.INK; ctx.lineWidth = 0.9; ctx.strokeRect(bx, by, 44, 6);
+      }
+    }
     /* hearts */
     const hearts = Math.round(p.maxhp / C.HEART), hurt = g.hudHurt > 0 && Math.floor(g.hudHurt * 20) % 2 === 0;
     for (let i = 0; i < hearts; i++) ART.heart(ctx, 14 + i * 15, 14, hurt ? 1.18 : 1, U.clamp((p.hp - i * C.HEART) / C.HEART, 0, 1), C.RED);
