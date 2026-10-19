@@ -10,6 +10,10 @@
   const RESERVED = { Escape: 1, Tab: 1, MetaLeft: 1, MetaRight: 1, ContextMenu: 1, F5: 1, F11: 1, F12: 1 };
   UI.keyName = function (c) {
     if (NICE[c]) return NICE[c];
+    if (c === 'Mouse0') return 'LEFT CLICK';
+    if (c === 'Mouse1') return 'MIDDLE CLICK';
+    if (c === 'Mouse2') return 'RIGHT CLICK';
+    if (/^Mouse/.test(c)) return 'MOUSE ' + c.slice(5);
     if (/^Key/.test(c)) return c.slice(3);
     if (/^Digit/.test(c)) return c.slice(5);
     if (/^Numpad/.test(c)) return 'NUM ' + c.slice(6).toUpperCase();

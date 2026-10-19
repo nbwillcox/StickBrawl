@@ -19,7 +19,7 @@ A free, original pencil-sketch beat 'em up in the spirit of the 80s arcade stree
 | With a weapon | punch = swing / stab, kick = throw it |
 | Pause | `P` or `Esc` |
 
-Every key can be changed in **Settings → Controls** (click an action, press the new key; a key already in use is swapped). Esc always pauses.
+Every key can be changed in **Settings → Controls** (click an action, then press a key or click a mouse button - left, right and middle click can be bound too; a key already in use is swapped). Esc always pauses.
 
 Gamepad: A jump, X/Y punch, B kick, Start pause (not rebindable yet).
 

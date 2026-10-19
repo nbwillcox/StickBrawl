@@ -11,22 +11,40 @@
   I.rebuild = function () { CODE = {}; const k = G.settings.keys; for (const a in k) CODE[k[a]] = a; };
   I.capture = null;                                      /* while set, the next key press goes here instead of the game (rebinding) */
 
+  /* keys and mouse buttons share one path: codes are KeyboardEvent codes or Mouse0 (left) / Mouse1 (middle) / Mouse2 (right) */
+  function press(code, repeat, target, e) {
+    const a = CODE[code];
+    if (a && MOVE[a]) { I[a] = true; refresh(); }
+    else if (a && BTN[a]) { if (!repeat) I.buf[a] = BUF; I.held[a] = true; }
+    else if ((a === 'pause' || code === 'Escape') && !repeat) I._pause = true;
+    else return false;
+    if (e && target.tagName !== 'BUTTON') e.preventDefault();
+    if (!repeat) I._any = true;
+    return true;
+  }
+  function release(code) {
+    const a = CODE[code];
+    if (a && MOVE[a]) { I[a] = false; refresh(); }
+    if (a && BTN[a]) I.held[a] = false;
+  }
   window.addEventListener('keydown', (e) => {
     if (I.capture) { e.preventDefault(); e.stopPropagation(); if (!e.repeat) I.capture(e.code); return; }
     if (typing(e.target)) return;
-    const a = CODE[e.code];
-    if (a && MOVE[a]) { I[a] = true; refresh(); }
-    else if (a && BTN[a]) { if (!e.repeat) I.buf[a] = BUF; I.held[a] = true; }
-    else if ((a === 'pause' || e.code === 'Escape') && !e.repeat) I._pause = true;
-    else { if (G.debugKey && !e.repeat) G.debugKey(e); return; }
-    if (e.target.tagName !== 'BUTTON') e.preventDefault();
-    if (!e.repeat) I._any = true;
+    if (!press(e.code, e.repeat, e.target, e) && G.debugKey && !e.repeat) G.debugKey(e);
   }, true);
-  window.addEventListener('keyup', (e) => {
-    const a = CODE[e.code];
-    if (a && MOVE[a]) { I[a] = false; refresh(); }
-    if (a && BTN[a]) I.held[a] = false;
-  });
+  window.addEventListener('keyup', (e) => release(e.code));
+  /* mouse: while rebinding any click is taken as the new binding; in play only clicks on the game canvas count, so menus keep working */
+  let swallowClick = false;
+  window.addEventListener('mousedown', (e) => {
+    const code = 'Mouse' + e.button;
+    if (I.capture) { e.preventDefault(); e.stopPropagation(); swallowClick = e.button === 0; I.capture(code); return; }
+    if (e.target.id !== 'game') return;
+    press(code, false, e.target, e);
+  }, true);
+  window.addEventListener('mouseup', (e) => { release('Mouse' + e.button); if (swallowClick) setTimeout(() => { swallowClick = false; }, 0); }, true);
+  window.addEventListener('click', (e) => { if (swallowClick) { swallowClick = false; e.preventDefault(); e.stopPropagation(); } }, true);
+  window.addEventListener('contextmenu', (e) => { if (I.capture || e.target.id === 'game') e.preventDefault(); });
+  window.addEventListener('auxclick', (e) => { if (I.capture || e.target.id === 'game') e.preventDefault(); });
   window.addEventListener('blur', () => { I.left = I.right = I.up = I.down = false; I.held.punch = I.held.kick = I.held.jump = false; refresh(); });
 
   I.tick = function (dt) { const b = I.buf; if (b.punch > 0) b.punch -= dt; if (b.kick > 0) b.kick -= dt; if (b.jump > 0) b.jump -= dt; };
