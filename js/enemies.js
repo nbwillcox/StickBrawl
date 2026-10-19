@@ -1,0 +1,98 @@
+/* Enemy roster and AI. Every enemy is a red stick figure with its own prop. Attack tokens keep it to two attackers at a time; the rest circle at a distance. */
+(function (G) {
+  'use strict';
+  const U = G.U, C = G.C, F = G.fighter;
+  const RED = { col: C.RED, core: C.RED_D, team: 'e' };
+  const look = (o) => Object.assign({ scale: 1, line: 2.5 }, RED, o);
+
+  const DEFS = {
+    thug: { kind: 'thug', name: 'THUG', team: 'e', speed: 36, hp: 14, score: 300, reach: 25, cool: [0.9, 1.7], attacks: [['e_jab', 3], ['e_kick', 1]], food: 0.08, weapons: 0.4, look: look({ props: ['band'], bandCol: '#e8b81f' }) },
+    masked: { kind: 'masked', name: 'BANDIT', team: 'e', speed: 50, hp: 14, score: 400, reach: 25, cool: [0.6, 1.2], attacks: [['e_quick', 3], ['e_kick', 1]], food: 0.08, weapons: 0.35, look: look({ props: ['mask'] }) },
+    ninja: { kind: 'ninja', name: 'NINJA', team: 'e', speed: 58, hp: 18, score: 500, reach: 26, cool: [0.8, 1.5], attacks: [['e_kick', 2], ['e_jab', 2]], hop: 0.45, food: 0.1, weapons: 0.2, look: look({ props: ['band', 'tails', 'wrap'], bandCol: '#1d1c1a' }) },
+    brute: { kind: 'brute', name: 'BIG BRUTE', team: 'e', speed: 26, hp: 70, score: 2000, reach: 38, cool: [1.2, 2.2], attacks: [['e_hook', 3], ['e_jab', 1]], armor: 3, noGrab: true, stunMul: 0.6, food: 1, boss: 'mini', look: look({ scale: 1.3, line: 2.9, props: ['mohawk', 'vest', 'scar'], hawkCol: '#1d1c1a' }) },
+    boss: { kind: 'boss', name: 'THE CHIEF', team: 'e', speed: 34, hp: 120, score: 5000, reach: 38, cool: [0.9, 1.7], attacks: [['e_hook', 3], ['e_kick', 2], ['e_jab', 1]], hop: 0.35, armor: 4, noGrab: true, stunMul: 0.5, food: 0, boss: 'big', look: look({ scale: 1.45, line: 3, props: ['hat', 'scar', 'beard', 'vest'], hatBand: '#c9a227' }) },
+  };
+
+  function weightedPick(list) {
+    let tot = 0; for (const a of list) tot += a[1];
+    let r = Math.random() * tot;
+    for (const a of list) { r -= a[1]; if (r <= 0) return a[0]; }
+    return list[0][0];
+  }
+
+  function release(e) {
+    const ai = e.ai;
+    if (ai.tok) { ai.tok = false; e.g.tokens.delete(e); }
+    ai.attacking = false;
+  }
+
+  function create(g, kind, x, y) {
+    const def = DEFS[kind], e = new F.Fighter(g, def, x, y);
+    e.hp = e.maxhp = def.hp;
+    e.ai = { side: Math.random() < 0.5 ? -1 : 1, tok: false, tokT: 0, cd: U.rand(0.3, 1.3), attacking: false, yoff: U.rand(-16, 16), wantsWeapon: Math.random() < (def.weapons || 0), ringR: 62 + Math.random() * 22, retarget: 0 };
+    e.kind = kind;
+    return e;
+  }
+
+  function reachOf(e) {
+    if (e.weapon) { const m = F.MOVES[F.WEAPON[e.weapon.type].emv]; return m.reach; }
+    return e.def.reach;
+  }
+
+  function think(e, g, dt) {
+    const I = e.intent, ai = e.ai, p = g.player;
+    I.dx = I.dy = 0; I.face = 0; I.jump = false; I.punch = false; I.kick = false;
+    if (e.state !== 'idle' && e.state !== 'walk') {
+      if (e.state === 'hurt' || e.down || e.state === 'grabbed') release(e);
+      return;
+    }
+    if (ai.attacking) { release(e); ai.attacking = false; }
+    ai.cd -= dt;
+    const onScreen = e.x > g.camX - 4 && e.x < g.camX + C.W + 4;
+    if (!p || p.state === 'dead' || p.hp <= 0) { release(e); return; }
+    const dxp = p.x - e.x, dyp = p.y - e.y, adx = Math.abs(dxp), ady = Math.abs(dyp);
+    I.face = U.sign(dxp) || e.face;
+    const pDown = p.down || p.inv > 0.9 || p.state === 'dead';
+    const reach = reachOf(e);
+
+    /* going for a weapon on the floor */
+    if (ai.wantsWeapon && !e.weapon && !ai.tok) {
+      const it = g.nearestWeapon(e.x, e.y, 130);
+      if (it) {
+        const wx = it.x - e.x, wy = it.y - e.y;
+        if (Math.abs(wx) < 7 && Math.abs(wy) < 5) { I.punch = true; }
+        else { I.dx = Math.abs(wx) > 3 ? U.sign(wx) : 0; I.dy = Math.abs(wy) > 2 ? U.sign(wy) : 0; }
+        return;
+      }
+    }
+    /* token handling */
+    if (ai.tok) { ai.tokT -= dt; if (ai.tokT <= 0 || pDown) { release(e); ai.cd = Math.max(ai.cd, 0.5); } }
+    else if (!pDown && onScreen && ai.cd <= 0 && adx < 170 && g.tokenFree(e)) { ai.tok = true; ai.tokT = 3.2; g.tokens.add(e); }
+
+    const side = U.sign(e.x - p.x) || ai.side;
+    ai.side = side;
+    let gx, gy;
+    if (ai.tok) { gx = p.x + side * reach * 0.8; gy = p.y; }
+    else if (pDown) { gx = p.x + side * 90; gy = p.y + ai.yoff; }
+    else { gx = p.x + side * ai.ringR; gy = p.y + ai.yoff; }
+    const ddx = gx - e.x, ddy = gy - e.y;
+    const tolX = ai.tok ? 3 : 8;
+    I.dx = Math.abs(ddx) > tolX ? U.sign(ddx) : 0;
+    I.dy = Math.abs(ddy) > 2.5 ? U.sign(ddy) : 0;
+    /* a fighter that is too close and has no token backs off a little */
+    if (!ai.tok && adx < ai.ringR - 14) I.dx = -U.sign(dxp) || I.dx;
+
+    if (ai.tok && ai.cd <= 0) {
+      if (e.def.hop && adx > 55 && adx < 140 && ady < 14 && Math.random() < 0.02 + dt * 0.6 * e.def.hop && !e.weapon) { I.act = 'hop'; ai.attacking = true; ai.cd = U.rand(e.def.cool[0], e.def.cool[1]); return; }
+      if (adx <= reach && ady < 7 && U.sign(dxp) === e.face * 1 || (adx <= reach && ady < 7)) {
+        if (e.weapon && Math.random() < 0.8) I.act = 'weapon';
+        else I.act = weightedPick(e.def.attacks);
+        ai.attacking = true;
+        ai.cd = U.rand(e.def.cool[0], e.def.cool[1]);
+        I.dx = I.dy = 0;
+      }
+    }
+  }
+
+  G.enemies = { DEFS, create, think, release };
+})((window.SGS = window.SGS || {}));
