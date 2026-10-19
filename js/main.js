@@ -14,8 +14,9 @@
     const s = Math.min(w / W, h / H);
     view.w = w; view.h = h; view.dpr = dpr; view.s = s;
     view.ox = (w - W * s) / 2; view.oy = (h - H * s) / 2;
-    view.k = s * dpr;
-    canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
+    if (window.TK) window.TK.layout(view, W, H);                           /* touch layout: phones get a lower pixel ratio */
+    view.k = s * view.dpr;
+    canvas.width = Math.round(w * view.dpr); canvas.height = Math.round(h * view.dpr);
     const f = U.clamp(Math.ceil(view.k), 1, 3);
     if (f !== paperF) { paperF = f; paper = ART.paperTile(f); paperPat = ctx.createPattern(paper, 'repeat'); }
     Game.ensureBackdrop(f);

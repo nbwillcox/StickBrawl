@@ -8,7 +8,11 @@
   const refresh = () => { I.dx = (I.right ? 1 : 0) - (I.left ? 1 : 0); I.dy = (I.down ? 1 : 0) - (I.up ? 1 : 0); };
   const MOVE = { left: 1, right: 1, up: 1, down: 1 }, BTN = { punch: 1, kick: 1, jump: 1 };
   let CODE = {};                                         /* key code -> action */
-  I.rebuild = function () { CODE = {}; const k = G.settings.keys; for (const a in k) CODE[k[a]] = a; };
+  I.rebuild = function () {
+    CODE = {}; const k = G.settings.keys; for (const a in k) CODE[k[a]] = a;
+    /* the on-screen touch controls send these fixed codes, so rebinding the keyboard never breaks them */
+    Object.assign(CODE, { TouchLeft: 'left', TouchRight: 'right', TouchUp: 'up', TouchDown: 'down', TouchPunch: 'punch', TouchKick: 'kick', TouchJump: 'jump', TouchPause: 'pause' });
+  };
   I.capture = null;                                      /* while set, the next key press goes here instead of the game (rebinding) */
 
   /* keys and mouse buttons share one path: codes are KeyboardEvent codes or Mouse0 (left) / Mouse1 (middle) / Mouse2 (right) */

@@ -23,6 +23,10 @@ Every key can be changed in **Settings → Controls** (click an action, then pre
 
 Gamepad: A jump, X/Y punch, B kick, Start pause (not rebindable yet).
 
+### On a phone or tablet
+
+Play in landscape. A floating stick on the left walks (up and down walk you along the street's depth); on the right, **PUNCH**, **KICK** and **JUMP** (jump, then tap punch for a spin kick or kick for a jump kick). Walk into a stunned enemy to grab him: punch to knee, kick to throw. Stand on a weapon and tap **PUNCH** to pick it up. The pause button opens the menu. The on-screen controls appear on touch devices automatically; Settings has size, opacity and a left-handed layout. Use your browser's *Add to Home Screen* to install it as a full-screen app.
+
 ## Weapons
 
 - **Baseball bat:** slow, heavy, knocks down.
