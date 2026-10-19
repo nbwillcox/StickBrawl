@@ -44,6 +44,7 @@
     const be = g.bossBar && g.bossBar.hp > 0 ? g.bossBar : (g.lastHitE && g.lastHitT > 0 && g.lastHitE.hp > 0 ? g.lastHitE : null);
     if (be) enemyBar(ctx, be.def.name, be.hp / be.maxhp, C.W - 14, 30, be.def.boss ? 110 : 70);
 
+    if (p.state === 'grabbed') label(ctx, 'MASH BUTTONS!', p.x - g.camX, p.y - 62, 10, C.RED, 'center');
     /* GO arrow */
     if (g.goT > 0 && Math.floor(g.goT * 2.6) % 2 === 0 && g.mode === 'play') {
       const x = C.W - 54, y = 108;
@@ -63,7 +64,10 @@
       ctx.globalAlpha = 1;
     }
     /* boss warning */
-    if (g.curWave && g.curWave.boss && g.waveActive && g.bossT < 2.2 && Math.floor(g.bossT * 4) % 2 === 0) label(ctx, 'WARNING!', C.W / 2, 100, 24, C.RED, 'center');
+    if (g.curWave && (g.curWave.boss || g.curWave.mini) && g.waveActive && g.bossT < 3) {
+      if (g.bossT < 2.2 && Math.floor(g.bossT * 4) % 2 === 0) label(ctx, 'WARNING!', C.W / 2, 98, 24, C.RED, 'center');
+      if (g.bossT > 0.6 && g.bossBar) label(ctx, g.bossBar.def.name, C.W / 2, 124, 13, C.RED_D, 'center');
+    }
     /* stage clear */
     if (g.mode === 'clear') {
       const t = g.clearT;
@@ -71,7 +75,7 @@
       if (t > 1.2) { label(ctx, 'TIME BONUS', C.W / 2 - 14, 128, 11, C.INK, 'right'); label(ctx, String(Math.max(0, g.timeBonus)), C.W / 2 + 6, 128, 11, C.INK, 'left'); }
       if (t > 1.6) { label(ctx, 'HEART BONUS', C.W / 2 - 14, 148, 11, C.INK, 'right'); label(ctx, String(Math.max(0, g.lifeBonus)), C.W / 2 + 6, 148, 11, C.INK, 'left'); }
     }
-    if (G.debug.on) label(ctx, 'DEBUG 1-5 spawn  6-9 items  H heal  E clear', 8, C.H - 8, 8, '#6d6a5d');
+    if (G.debug.on) label(ctx, 'DEBUG 1-5 spawn  0,6-9 items  G drum  H heal  E clear', 8, C.H - 8, 8, '#6d6a5d');
   };
   G.hud = H;
 })((window.SGS = window.SGS || {}));

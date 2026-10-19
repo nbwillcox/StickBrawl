@@ -223,6 +223,8 @@
       ctx.fillStyle = '#d6dde2'; ctx.strokeStyle = '#2b2a27'; ctx.lineWidth = 0.8;
       ctx.beginPath(); ctx.moveTo(-1.8, 1.5); ctx.lineTo(1.8, 1.5); ctx.lineTo(1.4, 10); ctx.lineTo(0, 13); ctx.lineTo(-1.8, 9); ctx.closePath(); ctx.fill(); ctx.stroke();
       ctx.fillStyle = '#2b2a27'; ctx.fillRect(-2.6, 0.7, 5.2, 1.1);
+    } else if (type === 'crate') {
+      boxShape(ctx, 0, 1, 15);
     } else if (type === 'nunchaku') {
       const b = (pose.wSw || 0) * D;
       ctx.strokeStyle = '#4a2c0f'; ctx.fillStyle = '#b07a3e'; ctx.lineWidth = 3;
@@ -234,6 +236,34 @@
       ctx.strokeStyle = '#b07a3e'; ctx.lineWidth = 1.8; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(ex, ey); ctx.stroke();
     }
   }
+
+  /* a wooden crate with its base at (x, y); used on the floor, overhead, and in the air */
+  function boxShape(ctx, cx, y0, s) {
+    const x0 = cx - s / 2;
+    ctx.fillStyle = '#c99a5a'; ctx.strokeStyle = '#3d2410'; ctx.lineWidth = 1.2;
+    ctx.fillRect(x0, y0, s, s); ctx.strokeRect(x0, y0, s, s);
+    ctx.lineWidth = 0.9; ctx.beginPath();
+    ctx.moveTo(x0, y0); ctx.lineTo(x0 + s, y0 + s); ctx.moveTo(x0 + s, y0); ctx.lineTo(x0, y0 + s);
+    ctx.moveTo(x0 + 2, y0 + 2.5); ctx.lineTo(x0 + s - 2, y0 + 2.5); ctx.moveTo(x0 + 2, y0 + s - 2.5); ctx.lineTo(x0 + s - 2, y0 + s - 2.5);
+    ctx.stroke();
+    A.hatch(ctx, x0 + s * 0.6, y0, s * 0.4, s, 2.2, 0.8, 0.22, '#3d2410');
+  }
+  A.crate = function (ctx, x, y, rot) {
+    ctx.save(); ctx.translate(x, y - 7.5); ctx.rotate((rot || 0) * D); boxShape(ctx, 0, -7.5, 15); ctx.restore();
+  };
+  /* an oil drum that can be smashed; hp 0..1 darkens it as it takes hits */
+  A.drum = function (ctx, x, y, hit) {
+    ctx.save(); ctx.translate(x + (hit > 0 ? (Math.random() - 0.5) * 1.6 : 0), y);
+    ctx.fillStyle = '#7f95a3'; ctx.strokeStyle = '#26323a'; ctx.lineWidth = 1.3;
+    ctx.beginPath(); ctx.moveTo(-8, 0); ctx.lineTo(-8.6, -20); ctx.quadraticCurveTo(0, -23.4, 8.6, -20); ctx.lineTo(8, 0); ctx.quadraticCurveTo(0, 3, -8, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#9db0bc'; ctx.beginPath(); ctx.ellipse(0, -20, 8.6, 3, 0, 0, 6.3); ctx.fill(); ctx.stroke();
+    ctx.lineWidth = 1; ctx.beginPath();
+    ctx.moveTo(-8.4, -7); ctx.quadraticCurveTo(0, -4, 8.4, -7); ctx.moveTo(-8.5, -14); ctx.quadraticCurveTo(0, -11, 8.5, -14); ctx.stroke();
+    ctx.save(); ctx.beginPath(); ctx.moveTo(-8, 0); ctx.lineTo(-8.6, -20); ctx.lineTo(8.6, -20); ctx.lineTo(8, 0); ctx.closePath(); ctx.clip();
+    A.hatch(ctx, 2, -24, 8, 28, 2, 0.9, 0.35, '#26323a'); ctx.restore();
+    ctx.fillStyle = '#c62a1f'; ctx.fillRect(-3, -17, 6, 4);
+    ctx.restore();
+  };
 
   /* draw a figure: f = fighter (x, y, z, face, look), pose = joint angles. Origin of the drawing is the feet. */
   A.figure = function (ctx, f, camX, pose) {

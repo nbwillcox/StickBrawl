@@ -28,12 +28,15 @@ Gamepad: A jump, X/Y punch, B kick, Start pause (not rebindable yet).
 - **Baseball bat:** slow, heavy, knocks down.
 - **Nunchaku:** fast two-hit combo.
 - **Knife:** quick stab; thrown it flies straight and fast.
+- **Crate:** carry it overhead (a bit slower) and throw it.
 
-Weapons wear out after a number of hits. Enemies pick them up too, and drop them when knocked down.
+Bosses have their own moves (slam, charge) and get enraged at half health. Regular enemies can grab you from the front: mash the buttons to break free.
+
+Crates can be picked up and thrown (enemies throw them too); oil drums can be smashed and often hide a weapon or food. Weapons wear out after a number of hits. Enemies pick them up too, and drop them when knocked down.
 
 ## Rules
 
-6 hearts per life, 3 lives, no continues. Extra lives at 20,000 and 50,000 points. Apples and chickens heal. The clock counts down from 240.
+6 hearts per life, 3 lives, no continues. Extra lives at 20,000 and 50,000 points. Apples and chickens heal. The clock counts down from 300.
 
 ## Testing flags
 

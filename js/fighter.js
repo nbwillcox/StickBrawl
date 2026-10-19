@@ -42,6 +42,8 @@
     nu1s: P({ lean: 16, aF: [86, 10], aB: [28, 118], lF: [34, 30], lB: [-28, 12], wSwA: 92 }),
     nu2w: P({ lean: 4, aF: [96, 70], aB: [40, 108], lF: [20, 24], lB: [-26, 16], wSwA: 20 }),
     nu2s: P({ lean: 20, aF: [60, 24], aB: [36, 118], lF: [40, 30], lB: [-34, 12], wSwA: 270 }),
+    slamS: P({ lean: 34, hipH: 12, aF: [40, 10], aB: [34, 14], lF: [40, 60], lB: [-30, 56] }),
+    carry: P({ lean: -4, aF: [168, 10], aB: [160, 14], lF: [16, 20], lB: [-20, 16] }),
     hopw: P({ lean: 10, hipH: 14, aF: [60, 80], aB: [30, 90], lF: [50, 100], lB: [-30, 80] }),
   };
   const ext = (l) => 10.5 * Math.cos(l[0] * D) + 10.5 * Math.cos((l[0] - l[1]) * D);
@@ -82,6 +84,8 @@
     e_kick: { s: 0.36, a: 0.1, r: 0.44, dmg: 3, kd: true, kdv: 80, reach: 33, pw: 'kickw', ps: 'kicks', lunge: 24, snd: 'kick', hs: 0.07, sh: 3 },
     e_quick: { s: 0.18, a: 0.07, r: 0.3, dmg: 2, stun: 0.28, reach: 25, pw: 'p2w', ps: 'p2s', lunge: 40, snd: 'punch', hs: 0.04, sh: 1.2 },
     e_hook: { s: 0.5, a: 0.12, r: 0.6, dmg: 6, kd: true, kdv: 100, reach: 38, pw: 'p3w', ps: 'p3s', lunge: 70, snd: 'punchH', hs: 0.1, sh: 5 },
+    e_slam: { s: 0.6, a: 0.12, r: 0.7, dmg: 5, kd: true, kdv: 95, reach: 52, both: true, pw: 'throw', ps: 'slamS', lunge: 0, snd: 'thud', fx: 'slam', hs: 0.1, sh: 6 },
+    e_charge: { s: 0.42, a: 0.34, r: 0.5, dmg: 5, kd: true, kdv: 100, reach: 30, pw: 'p3w', ps: 'p3s', lunge: 0, drive: 215, snd: 'punchH', swing: 'swing', hs: 0.1, sh: 5 },
     e_bat: { s: 0.4, a: 0.11, r: 0.5, dmg: 6, kd: true, kdv: 95, reach: 41, pw: 'batw', ps: 'bats', lunge: 30, snd: 'bat', swing: 'swing', wep: 'bat', hs: 0.1, sh: 4.5 },
     e_nun: { s: 0.3, a: 0.09, r: 0.4, dmg: 3, stun: 0.32, reach: 33, pw: 'nu1w', ps: 'nu1s', lunge: 24, snd: 'punch', swing: 'whoosh', wep: 'nunchaku', hs: 0.05, sh: 1.8 },
     e_knife: { s: 0.28, a: 0.08, r: 0.42, dmg: 4, stun: 0.38, reach: 26, pw: 'knw', ps: 'kns', lunge: 30, snd: 'stab', swing: 'whoosh', wep: 'knife', hs: 0.06, sh: 1.8 },
@@ -89,10 +93,11 @@
     jk: { air: true, dmg: 5, kd: true, kdv: 95, reach: 27, snd: 'kick', hs: 0.085, sh: 4 },
     spin: { air: true, dmg: 4, kd: true, kdv: 85, reach: 29, both: true, snd: 'kick', hs: 0.08, sh: 3.5 },
     e_hop: { air: true, dmg: 3, kd: true, kdv: 80, reach: 26, snd: 'kick', hs: 0.07, sh: 3 },
+    e_gknee: { dmg: 1, reach: 20, snd: 'knee', hs: 0.05, sh: 2 },
     knee: { dmg: 3, reach: 20, snd: 'knee', hs: 0.06, sh: 2 },
   };
-  const WEAPON = { bat: { uses: 9, mv: 'bat', emv: 'e_bat' }, nunchaku: { uses: 16, mv: 'nun1', emv: 'e_nun' }, knife: { uses: 8, mv: 'knife', emv: 'e_knife' } };
-  const WEAPON_POSE = { bat: 'batI', knife: 'knI', nunchaku: 'nuI' };
+  const WEAPON = { crate: { uses: 1, mv: 'throwW', emv: 'throwW' }, bat: { uses: 9, mv: 'bat', emv: 'e_bat' }, nunchaku: { uses: 16, mv: 'nun1', emv: 'e_nun' }, knife: { uses: 8, mv: 'knife', emv: 'e_knife' } };
+  const WEAPON_POSE = { crate: 'carry', bat: 'batI', knife: 'knI', nunchaku: 'nuI' };
 
   const PLAYER = {
     name: 'YOU', team: 'p', speed: 76, hp: C.PLAYER_HP, canGrab: true,
@@ -156,7 +161,7 @@
       if (!t) return;
       this.grab = null; t.grabber = null;
       t.dir = dir; t.thrownBy = this; t.hitSet = new Set();
-      t.takeDamage(5, this);
+      t.takeDamage(this.team === 'p' ? 5 : 3, this);
       if (t.hp <= 0) t.dying = true;
       t.to('fall'); t.vx = dir * 150; t.vz = 85; t.z = 6; t.kdv = 0;
       t.x = this.x + dir * 12;
@@ -238,11 +243,15 @@
         }
         case 'getup': if (this.t >= (this.team === 'p' ? 0.24 : 0.32)) this.to('idle'); break;
         case 'dead': this.deadT += dt; break;
-        case 'grab': this.grabUpdate(dt, g, I); break;
+        case 'grab': if (this.team === 'p') this.grabUpdate(dt, g, I); else this.grabUpdateE(dt, g); break;
         case 'grabbed': {
           const gr = this.grabber;
           if (!gr || gr.state !== 'grab' && gr.state !== 'atk') { this.grabber = null; this.to('idle'); break; }
           this.x = gr.x + gr.face * 13; this.y = gr.y; this.face = -gr.face;
+          /* a grabbed player shakes the enemy off by mashing buttons */
+          if (this.team === 'p') {
+            if (I.punch || I.kick || I.jump) { I.use('punch'); I.use('kick'); I.use('jump'); this.mash = (this.mash || 0) + 1; this.x += this.face * 1.2; if (this.mash >= 4) { this.mash = 0; gr.releaseGrab(0.4); this.inv = 0.5; A.sfx.snap(); FX.addShake(2); } }
+          }
           break;
         }
         case 'pick': {
@@ -255,11 +264,16 @@
     }
 
     groundUpdate(dt, g, I) {
-      const sp = this.def.speed;
+      const sp = this.def.speed * (this.speedMul || 1) * (this.weapon && this.weapon.type === 'crate' ? 0.85 : 1);
       /* actions first */
       if (I.act) {
         const a = I.act; I.act = null;
         if (a === 'hop') { this.startHop(); return; }
+        if (a === 'grab') {
+          const t = g.player;
+          if (t && (t.state === 'idle' || t.state === 'walk') && t.z === 0 && Math.abs(t.x - this.x) < 19 && Math.abs(t.y - this.y) < 8) { t.mash = 0; this.startGrab(t); }
+          return;
+        }
         if (a === 'weapon' && this.weapon) { this.startMove(this.weaponMove()); return; }
         if (MOVES[a]) { this.startMove(a); return; }
       }
@@ -315,7 +329,11 @@
         return;
       }
       if (t >= mv.s && t < mv.s + mv.a) {
-        if (!this.swung) { this.swung = true; const s = mv.swing || 'whoosh'; if (A.sfx[s]) A.sfx[s](); }
+        if (mv.drive) this.vx = this.face * mv.drive;
+        if (!this.swung) {
+          this.swung = true; const s = mv.swing || 'whoosh'; if (A.sfx[s]) A.sfx[s]();
+          if (mv.fx === 'slam') { FX.dust(this.x - 18, this.y, 4, true); FX.dust(this.x + 18, this.y, 4, true); FX.addShake(5); }
+        }
         g.hitCheck(this, mv);
       }
       /* chain into the next hit */
@@ -358,6 +376,20 @@
         FX.dust(this.x, this.y, 6, true); if (!(this.bounced)) { A.sfx.thud(); FX.addShake(this.dying ? 3.5 : 2.5); }
         this.lieT = this.dying ? 0.6 : (this.team === 'p' ? 0.42 : 0.8 + Math.random() * 0.35);
         this.to('lie');
+      }
+    }
+
+    /* an enemy that has grabbed the player: three knees, then a throw, unless the player mashes free */
+    grabUpdateE(dt, g) {
+      const t = this.grab;
+      this.grabT += dt;
+      if (!t || t.state !== 'grabbed') { this.grab = null; this.kneeing = false; this.to('idle'); return; }
+      if (this.kneeT > 0) { this.kneeT -= dt; if (this.kneeT <= 0) this.kneeing = false; }
+      const due = 0.55 * (this.knees + 1);
+      if (this.grabT >= due && !this.kneeing) {
+        this.kneeing = true; this.kneeT = 0.22; this.kneeStart = this.clock; this.knees++;
+        t.takeHit(this, MOVES.e_gknee, g);
+        if (this.knees >= 3 && t.state === 'grabbed') this.doThrow(this.face);
       }
     }
 

@@ -10,7 +10,7 @@
     PLAYER_HP: 24,                        /* 6 hearts x 4 */
     HEART: 4,
     EXTRA_LIFE: [20000, 50000],           /* then every 50,000 */
-    STAGE_TIME: 240,
+    STAGE_TIME: 300,
     REPO: 'https://github.com/nbwillcox/StickBrawl',
     INK: '#2b2a27', PAPER: '#f1e9d4',
     BLUE: '#2f62e8', BLUE_D: '#142f86',

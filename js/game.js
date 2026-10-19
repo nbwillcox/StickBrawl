@@ -20,7 +20,7 @@
   Game.loadLevel = function () {
     const lv = Game.level;
     Game.camX = 0; Game.camMax = 0; Game.waveIdx = 0; Game.waveActive = false; Game.queue = []; Game.waveItems = 0;
-    Game.enemies = []; Game.items = []; Game.projs = []; Game.tokens = new Set(); Game.goT = 0; Game.goBeep = 0;
+    Game.enemies = []; Game.props = []; Game.items = []; Game.projs = []; Game.tokens = new Set(); Game.goT = 0; Game.goBeep = 0;
     Game.introT = 0; Game.bossT = 0; Game.clearT = 0; Game.cleared = false; Game.respawnT = 0; Game.timeLeft = C.STAGE_TIME; Game.bossBar = null; Game.lastHitE = null; Game.lastHitT = 0;
     FX.reset();
     const p = new F.Fighter(Game, F.PLAYER, lv.start.x, lv.start.y);
@@ -51,7 +51,9 @@
   Game.dropItem = function (w, x, y, z, dir) {
     Game.items.push({ kind: 'weapon', type: w.type, uses: w.uses, x, y, z, vz: 70, vx: (dir || 1) * 34, rot: U.rand(-60, 60), taken: false, t: 0 });
   };
-  Game.addItem = function (type, x, y) {
+  Game.props = [];
+  Game.addItem = function (type, x, y, drop) {
+    if (type === 'drum') { Game.props.push({ kind: 'drum', x, y, hp: 4, flash: 0, drop: drop || null, id: Math.random() }); return; }
     if (type === 'apple' || type === 'chicken') Game.items.push({ kind: 'food', type, x, y, z: 0, vz: 0, vx: 0, t: 0 });
     else Game.items.push({ kind: 'weapon', type, uses: F.WEAPON[type].uses, x, y, z: 120, vz: 0, vx: 0, rot: U.rand(-70, 70), taken: false, t: 0 });
   };
@@ -71,7 +73,8 @@
   Game.throwWeapon = function (f) {
     const w = f.weapon; f.weapon = null;
     const knife = w.type === 'knife';
-    Game.projs.push({ type: w.type, uses: w.uses, x: f.x + f.face * 10, y: f.y, z: f.z + 24, vx: f.face * (knife ? 270 : 210), vz: knife ? 5 : 40, rot: f.face > 0 ? 0 : 180, team: f.team, owner: f, dmg: knife ? 6 : w.type === 'bat' ? 5 : 3, spin: !knife, hit: false });
+    const crate = w.type === 'crate';
+    Game.projs.push({ type: w.type, uses: w.uses, x: f.x + f.face * 10, y: f.y, z: f.z + (crate ? 36 : 24), vx: f.face * (knife ? 270 : crate ? 190 : 210), vz: knife ? 5 : crate ? 20 : 40, rot: crate ? 0 : f.face > 0 ? 0 : 180, team: f.team, owner: f, dmg: knife ? 6 : crate ? 6 : w.type === 'bat' ? 5 : 3, spin: !knife && !crate, hit: false });
     A.sfx.throw();
   };
 
@@ -90,8 +93,28 @@
       att.hitSet.add(v);
       v.takeHit(att, mv, Game);
     }
+    if (att.team === 'p') {
+      for (const pr of Game.props) {
+        if (pr.hp <= 0 || att.hitSet.has(pr)) continue;
+        const dx = pr.x - att.x, fwd = dx * att.face;
+        const front = mv.both ? Math.abs(dx) < mv.reach + 8 : (fwd > -8 && fwd < mv.reach + 8);
+        if (!front || Math.abs(pr.y - att.y) > 12 || att.z > 22) continue;
+        att.hitSet.add(pr); att.connected = true; hurtProp(pr, mv.dmg >= 4 ? 2 : 1, att.face);
+      }
+    }
     if (G.debug.boxes) Game.dbg.push({ x0: att.face > 0 ? att.x - 7 : att.x - mv.reach - 6, x1: att.face > 0 ? att.x + mv.reach + 6 : att.x + 7, y: att.y, z: att.z, t: 0.08 });
   };
+  function hurtProp(pr, n, dir) {
+    pr.hp -= n; pr.flash = 0.12;
+    FX.spark(pr.x, pr.y + 0.5, 12, 0.8); FX.debris(pr.x, pr.y, 14, dir || 1, 3, '#4a5a66'); A.sfx.punch(); FX.freeze(0.04); FX.addShake(1.5);
+    if (pr.hp <= 0) {
+      FX.debris(pr.x, pr.y, 10, 1, 8, '#4a5a66'); FX.debris(pr.x, pr.y, 10, -1, 8, '#4a5a66'); FX.dust(pr.x, pr.y, 6, true); A.sfx.snap(); FX.addShake(3);
+      if (pr.drop) {
+        if (pr.drop === 'apple' || pr.drop === 'chicken') Game.items.push({ kind: 'food', type: pr.drop, x: pr.x, y: pr.y, z: 24, vz: 60, vx: 0, t: 0 });
+        else Game.items.push({ kind: 'weapon', type: pr.drop, uses: F.WEAPON[pr.drop].uses, x: pr.x, y: pr.y, z: 24, vz: 60, vx: 0, rot: U.rand(-40, 40), taken: false, t: 0 });
+      }
+    }
+  }
   Game.onHit = function (att, v, mv, dmg, heavy, over) {
     const dirAway = U.sign(v.x - att.x) || att.face;
     const hx = v.x - dirAway * 3, hz = v.z + (v.state === 'lie' ? 6 : 26);
@@ -115,7 +138,7 @@
         if (owner.team === 'p' || att.team === 'p') { Game.addScore(v.def.score); FX.text(v.x, v.y - 50, '+' + v.def.score, '#8a1c14', 9); }
         E.release(v);
         if (v.def.food && Math.random() < v.def.food) Game.items.push({ kind: 'food', type: v.def.kind === 'brute' ? 'chicken' : 'apple', x: v.x + dirAway * 12, y: v.y, z: 40, vz: 40, vx: dirAway * 20, t: 0 });
-        if (v.def.boss === 'mini' || v.def.boss === 'big') FX.addShake(5);
+        if (v.def.boss) { FX.freeze(0.28); FX.addShake(8); FX.text(v.x, v.y - 70, 'K.O.!', '#c62a1f', 14); }
       }
     }
   };
@@ -145,8 +168,8 @@
   function startWave(w) {
     Game.waveActive = true; Game.goT = 0;
     Game.queue = (w.enemies || []).map((s) => ({ k: s.k, side: s.side, t: s.d }));
-    for (const it of (w.items || [])) Game.addItem(it.t, it.x, it.y);
-    if (w.mini || w.boss) { A.sfx.warn(); }
+    for (const it of (w.items || [])) Game.addItem(it.t, it.x, it.y, it.drop);
+    if (w.mini || w.boss) { A.sfx.warn(); Game.bossT = 0; }
     if (w.boss) { A.music('boss'); Game.bossT = 0; }
     Game.curWave = w;
   }
@@ -274,6 +297,7 @@
   }
   function updateItems(dt) {
     const p = Game.player;
+    for (const pr of Game.props) if (pr.flash > 0) pr.flash -= dt;
     for (let i = Game.items.length - 1; i >= 0; i--) {
       const it = Game.items[i];
       it.t += dt;
@@ -299,12 +323,17 @@
           const mv = { dmg: q.dmg, kd: q.type !== 'nunchaku', kdv: 90, stun: 0.35, hs: 0.06, sh: 2.5, snd: q.type === 'knife' ? 'stab' : 'punchH' };
           v.takeHit(q.owner, mv, Game);
           q.uses = Math.max(1, q.uses - 1);
-          Game.items.push({ kind: 'weapon', type: q.type, uses: q.uses, x: v.x, y: v.y, z: v.z + 20, vz: 50, vx: -U.sign(q.vx) * 20, rot: q.rot, taken: false, t: 0 });
+          if (q.type === 'crate') { FX.debris(q.x, q.y, q.z, U.sign(q.vx), 9, '#8a5a2b'); A.sfx.snap(); }
+          else Game.items.push({ kind: 'weapon', type: q.type, uses: q.uses, x: v.x, y: v.y, z: v.z + 20, vz: 50, vx: -U.sign(q.vx) * 20, rot: q.rot, taken: false, t: 0 });
           done = true; break;
         }
       }
+      if (!done && q.team === 'p') {
+        for (const pr of Game.props) if (pr.hp > 0 && Math.abs(pr.x - q.x) < 11 && Math.abs(pr.y - q.y) < 10 && q.z < 26) { hurtProp(pr, q.dmg >= 5 ? 3 : 2, U.sign(q.vx)); if (q.type === 'crate') { FX.debris(q.x, q.y, q.z, U.sign(q.vx), 9, '#8a5a2b'); A.sfx.snap(); } else Game.items.push({ kind: 'weapon', type: q.type, uses: q.uses, x: q.x, y: q.y, z: 14, vz: 40, vx: -U.sign(q.vx) * 20, rot: q.rot, taken: false, t: 0 }); done = true; break; }
+      }
       if (!done && (q.z <= 0 || q.x < Game.camX - 40 || q.x > Game.camX + C.W + 40)) {
-        if (q.z <= 0) Game.items.push({ kind: 'weapon', type: q.type, uses: q.uses, x: q.x, y: q.y, z: 0, vz: 0, vx: 0, rot: q.rot % 360, taken: false, t: 0 });
+        if (q.type === 'crate') { if (q.z <= 0) { FX.debris(q.x, q.y, 4, 1, 8, '#8a5a2b'); A.sfx.snap(); } }
+        else if (q.z <= 0) Game.items.push({ kind: 'weapon', type: q.type, uses: q.uses, x: q.x, y: q.y, z: 0, vz: 0, vx: 0, rot: q.rot % 360, taken: false, t: 0 });
         done = true; FX.dust(q.x, q.y, 2);
       }
       if (done) Game.projs.splice(i, 1);
@@ -328,6 +357,7 @@
     /* depth-sorted drawables */
     const list = [];
     for (const it of Game.items) list.push({ y: it.y, it });
+    for (const pr of Game.props) if (pr.hp > 0) list.push({ y: pr.y, pr });
     for (const e of Game.enemies) list.push({ y: e.y, f: e });
     if (Game.player) list.push({ y: Game.player.y + 0.01, f: Game.player });
     for (const q of Game.projs) list.push({ y: q.y + 2, q });
@@ -336,8 +366,9 @@
     for (const d of list) if (d.f && d.f.state !== 'dead') ART.shadow(ctx, d.f, cam);
     for (const it of Game.items) if (it.kind === 'weapon' && it.z < 2) { ctx.save(); ctx.globalAlpha = 0.18; ctx.fillStyle = C.INK; ctx.beginPath(); ctx.ellipse(it.x - cam, it.y + 0.5, 9, 2.2, 0, 0, 6.3); ctx.fill(); ctx.restore(); }
     for (const d of list) {
-      if (d.it) drawItem(ctx, d.it, cam);
-      else if (d.q) { const q = d.q; ART.weaponIcon(ctx, q.type, q.x - cam, q.y - q.z + 8, q.rot, 1); }
+      if (d.pr) { ART.drum(ctx, d.pr.x - cam, d.pr.y, d.pr.flash); }
+      else if (d.it) drawItem(ctx, d.it, cam);
+      else if (d.q) { const q = d.q; if (q.type === 'crate') ART.crate(ctx, q.x - cam, q.y - q.z + 7, q.rot); else ART.weaponIcon(ctx, q.type, q.x - cam, q.y - q.z + 8, q.rot, 1); }
       else drawFighter(ctx, d.f, cam);
     }
     FX.draw(ctx, cam);
@@ -349,8 +380,8 @@
   function drawItem(ctx, it, cam) {
     const sx = it.x - cam, sy = it.y - it.z;
     if (it.kind === 'food') { const bob = Math.sin(it.t * 4) * 1.2; ART.food(ctx, it.type, sx, sy + bob); return; }
-    const bob = it.z < 1 ? 0 : 0;
-    ART.weaponIcon(ctx, it.type, sx, sy + 2 + bob, it.z < 1 ? 78 + (it.rot || 0) * 0.3 : (it.rot || 0) + it.t * 400, 1);
+    if (it.type === 'crate') ART.crate(ctx, sx, sy, it.z < 1 ? 0 : it.t * 300); else
+    ART.weaponIcon(ctx, it.type, sx, sy + 2, it.z < 1 ? 78 + (it.rot || 0) * 0.3 : (it.rot || 0) + it.t * 400, 1);
     if (it.z < 1 && !it.taken) {
       const a = 0.5 + 0.5 * Math.sin(it.t * 5);
       ctx.save(); ctx.globalAlpha = 0.4 + a * 0.4; ctx.strokeStyle = '#e8b81f'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(sx, sy - 3, 9 + a * 1.5, 0.3, 2.8); ctx.stroke(); ctx.beginPath(); ctx.arc(sx, sy - 3, 9 + a * 1.5, 3.5, 6); ctx.stroke(); ctx.restore();
@@ -383,6 +414,8 @@
     else if (e.code === 'Digit7') Game.addItem('knife', p.x + 40, p.y);
     else if (e.code === 'Digit8') Game.addItem('nunchaku', p.x + 40, p.y);
     else if (e.code === 'Digit9') Game.addItem('chicken', p.x + 40, p.y);
+    else if (e.code === 'Digit0') Game.addItem('crate', p.x + 40, p.y);
+    else if (e.code === 'KeyG') Game.addItem('drum', p.x + 40, p.y, 'knife');
     else if (e.code === 'KeyH') p.hp = p.maxhp;
     else if (e.code === 'KeyE') { for (const q of Game.enemies) { q.hp = 0; q.dying = true; q.knock(1, 60, p); } }
   };
