@@ -85,6 +85,14 @@
     knife: { s: 0.05, a: 0.07, r: 0.13, dmg: 5, stun: 0.4, reach: 26, pw: 'knw', ps: 'kns', lunge: 30, snd: 'stab', swing: 'whoosh', wep: 'knife', hs: 0.06, sh: 1.8 },
     throwW: { s: 0.06, a: 0.02, r: 0.16, dmg: 0, reach: 0, pw: 'p3w', ps: 'p3s', lunge: 0, special: 'throwW' },
     /* enemy versions: slower wind-ups so there is something to read */
+    /* enemy combos: a telegraphed opener, then follow-ups that only come if the one before landed; the last hit knocks down (like the player's) */
+    ep1: { s: 0.28, a: 0.07, r: 0.12, dmg: 2, stun: 0.34, reach: 25, pw: 'p1w', ps: 'p1s', lunge: 34, next: 'ep2', next2: 'ep3', snd: 'punch', hs: 0.04, sh: 1.2 },
+    ep1f: { s: 0.16, a: 0.07, r: 0.1, dmg: 2, stun: 0.34, reach: 25, pw: 'p1w', ps: 'p1s', lunge: 36, next: 'ep2', next2: 'ep3', snd: 'punch', hs: 0.04, sh: 1.2 },
+    ep2: { s: 0.1, a: 0.07, r: 0.1, dmg: 2, stun: 0.34, reach: 26, pw: 'p2w', ps: 'p2s', lunge: 34, next: 'ep3', snd: 'punch', hs: 0.04, sh: 1.2 },
+    ep3: { s: 0.12, a: 0.08, r: 0.4, dmg: 3, kd: true, kdv: 78, reach: 29, pw: 'p3w', ps: 'p3s', lunge: 56, snd: 'punchH', hs: 0.085, sh: 3.5 },
+    ek1: { s: 0.32, a: 0.08, r: 0.12, dmg: 2, stun: 0.34, reach: 31, pw: 'kickw', ps: 'kicks', lunge: 26, next: 'ek2', next2: 'ekH', snd: 'kick', hs: 0.05, sh: 1.6 },
+    ek2: { s: 0.1, a: 0.08, r: 0.12, dmg: 2, stun: 0.34, reach: 31, pw: 'k2w', ps: 'k2s', lunge: 26, next: 'ekH', snd: 'kick', hs: 0.05, sh: 1.6 },
+    ekH: { s: 0.12, a: 0.1, r: 0.42, dmg: 4, kd: true, kdv: 88, reach: 33, pw: 'kickw', ps: 'kicks', lunge: 28, snd: 'kick', hs: 0.08, sh: 3.5 },
     e_jab: { s: 0.3, a: 0.08, r: 0.38, dmg: 2, stun: 0.32, reach: 25, pw: 'p1w', ps: 'p1s', lunge: 34, snd: 'punch', hs: 0.04, sh: 1.2 },
     e_kick: { s: 0.36, a: 0.1, r: 0.44, dmg: 3, kd: true, kdv: 80, reach: 33, pw: 'kickw', ps: 'kicks', lunge: 24, snd: 'kick', hs: 0.07, sh: 3 },
     e_quick: { s: 0.18, a: 0.07, r: 0.3, dmg: 2, stun: 0.28, reach: 25, pw: 'p2w', ps: 'p2s', lunge: 40, snd: 'punch', hs: 0.04, sh: 1.2 },
@@ -345,8 +353,11 @@
       /* chain into the next hit */
       const rec = mv.s + mv.a;
       const nb = mv.nextBtn || 'punch';
-      if (mv.next && t >= rec + mv.r * 0.05 && I[nb] && (this.connected || this.team !== 'p')) {
-        I.use(nb); this.swung = false; this.startMove(mv.next); return;
+      let nxt = mv.next;
+      if (this.team === 'e' && mv.next2 && (this.def.comboLen || 2) < 3) nxt = mv.next2;
+      if (nxt && t >= rec + mv.r * 0.05 && (this.team === 'p' ? I[nb] : true) && this.connected) {
+        if (this.team === 'p') I.use(nb);
+        this.swung = false; this.startMove(nxt); return;
       }
       /* player cancels: jump out of any recovery, kick out of a punch that landed, walk away from the tail end */
       if (this.team === 'p' && t >= rec) {

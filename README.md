@@ -34,7 +34,7 @@ Play in landscape. A floating stick on the left walks (up and down walk you alon
 - **Knife:** quick stab; thrown it flies straight and fast.
 - **Crate:** carry it overhead (a bit slower) and throw it.
 
-Bosses have their own moves (slam, charge) and get enraged at half health. Regular enemies can grab you from the front: mash the buttons to break free.
+Enemies fight like you: a telegraphed opener, then a 2 or 3 hit punch or kick combo that only continues if the hit before it landed, ending in a knockdown. Big bosses skip the light stuff and use heavy attacks that always knock you down. Bosses have their own moves (slam, charge) and get enraged at half health. Regular enemies can grab you from the front: mash the buttons to break free.
 
 Crates can be picked up and thrown (enemies throw them too); oil drums can be smashed and often hide a weapon or food. Weapons wear out after a number of hits. Enemies pick them up too, and drop them when knocked down.
 
