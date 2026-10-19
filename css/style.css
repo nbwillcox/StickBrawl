@@ -75,3 +75,5 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--blue); }
 .keylist button.listening { background: #fff0a8; border-color: var(--red); color: var(--red); }
 .keylist button.clash { background: #ffd6d0; }
 @media (max-height: 640px) { .keylist li { padding: 2px 0; font-size: 14px; } .keylist button { padding: 4px 10px; } }
+
+.keylist li.sep { justify-content: center; font-size: 12px; letter-spacing: 0.08em; color: #6d6a5d; padding-top: 8px; text-transform: uppercase; }

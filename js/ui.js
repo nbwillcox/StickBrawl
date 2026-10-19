@@ -23,6 +23,9 @@
     const k = S.keys, n = UI.keyName;
     $('titleHint').innerHTML = '<b>' + n(k.left) + ' ' + n(k.right) + ' ' + n(k.up) + ' ' + n(k.down) + '</b>: move &nbsp; <b>' + n(k.punch) + '</b>: punch &nbsp; <b>' + n(k.kick) + '</b>: kick &nbsp; <b>' + n(k.jump) + '</b>: jump (then punch or kick in the air) &nbsp; walk into a stunned enemy to grab him &nbsp; <b>' + n(k.pause) + '</b> / <b>Esc</b>: pause';
   };
+  const PAD_ACTIONS = [['punch', 'Punch'], ['kick', 'Kick'], ['jump', 'Jump'], ['pause', 'Pause']];
+  const PAD_NAMES = ['A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT', 'BACK', 'START', 'L-STICK', 'R-STICK'];
+  UI.padName = (i) => PAD_NAMES[i] || 'BUTTON ' + i;
   UI.renderKeys = function () {
     const ul = $('keyList'); ul.innerHTML = '';
     for (const [a, label] of ACTIONS) {
@@ -31,6 +34,26 @@
       b.addEventListener('click', () => UI.listen(a, b));
       li.append(nm, b); ul.appendChild(li);
     }
+    const hd = document.createElement('li'); hd.className = 'sep'; hd.textContent = 'Gamepad (d-pad / left stick always move)'; ul.appendChild(hd);
+    for (const [a, label] of PAD_ACTIONS) {
+      const li = document.createElement('li'), nm = document.createElement('span'), b = document.createElement('button');
+      nm.textContent = label; b.textContent = UI.padName(S.pad[a]); b.dataset.pad = a;
+      b.addEventListener('click', () => UI.listenPad(a, b));
+      li.append(nm, b); ul.appendChild(li);
+    }
+  };
+  /* press a gamepad button to bind it; any keyboard key or click cancels. The d-pad buttons are reserved for movement. */
+  UI.listenPad = function (action, btn) {
+    A.resume(); A.sfx.select();
+    UI.renderKeys();
+    const b2 = $('keyList').querySelector('[data-pad="' + action + '"]'); b2.classList.add('listening'); b2.textContent = 'PRESS A BUTTON...';
+    G.input.capture = () => { G.input.capture = null; G.input.padCapture = null; UI.renderKeys(); };
+    G.input.padCapture = (i) => {
+      G.input.capture = null;
+      if (i >= 12 && i <= 15) { UI.renderKeys(); const bb = $('keyList').querySelector('[data-pad="' + action + '"]'); bb.classList.add('clash'); bb.textContent = 'D-PAD IS MOVE'; setTimeout(UI.renderKeys, 900); return; }
+      for (const a in S.pad) if (a !== action && S.pad[a] === i) S.pad[a] = S.pad[action];
+      S.pad[action] = i; S.save(); UI.renderKeys(); A.sfx.pickup();
+    };
   };
   /* click an action, press a key: the key is swapped with whichever action had it so nothing is ever left unbound */
   UI.listen = function (action, btn) {
@@ -55,6 +78,7 @@
     if (name === 'settings') UI.loadSettings();
     if (name === 'controls') UI.renderKeys();
     if (G.input.capture) G.input.capture = null;
+    G.input.padCapture = null;
     setTimeout(() => {
       const sec = $(name);
       if (!sec || sec.classList.contains('hidden')) return;
@@ -122,7 +146,7 @@
     click('btnSettingsBack', () => UI.show(UI.back || 'title'));
     click('btnControls', () => UI.show('controls'));
     click('btnKeysBack', () => UI.show('settings'));
-    click('btnKeysReset', () => { S.keys = Object.assign({}, G.C.KEYS); S.save(); G.input.rebuild(); UI.renderKeys(); UI.updateHints(); });
+    click('btnKeysReset', () => { S.keys = Object.assign({}, G.C.KEYS); S.pad = Object.assign({}, G.C.PAD); S.save(); G.input.rebuild(); UI.renderKeys(); UI.updateHints(); });
     click('btnScoresPlay', () => M.startGame());
     click('btnScoresBack', () => UI.show('title'));
     click('btnRetry', () => M.startGame());

@@ -21,7 +21,7 @@ A free, original pencil-sketch beat 'em up in the spirit of the 80s arcade stree
 
 Every key can be changed in **Settings → Controls** (click an action, then press a key or click a mouse button - left, right and middle click can be bound too; a key already in use is swapped). Esc always pauses.
 
-Gamepad: A jump, X/Y punch, B kick, Start pause (not rebindable yet).
+Gamepad: the d-pad / left stick move; A jump, X punch, B kick and Start pause by default, all rebindable in the same Controls screen.
 
 ### On a phone or tablet
 
