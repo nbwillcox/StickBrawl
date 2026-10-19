@@ -149,6 +149,78 @@
     ],
     drums: { kick: [0, 3, 8, 11], snare: [4, 12], hat: [0, 2, 4, 6, 8, 10, 12, 14] }, bassOct: [0, 12, 0, 12, 0, 12, 0, 12],
   };
+
+  /* warehouse: gritty, mid tempo, low square lead */
+  T.warehouse = {
+    bpm: 132, key: N.E4, lead: 'p12', leadVol: 0.085,
+    bars: [
+      { r: N.E2, l: [0, null, 0, null, 3, null, 0, null, 5, null, 3, null, 0, null, -2, null] },
+      { r: N.E2, l: [7, null, 7, 5, 3, null, 5, null, 3, null, 0, null, 3, 5, 7, null] },
+      { r: N.C2, l: [-4, null, -4, null, 0, null, -4, null, 3, null, 0, null, -4, null, -1, null] },
+      { r: N.D2, l: [-2, null, -2, 0, 3, null, 5, null, 3, null, 0, null, -2, null, 0, 3] },
+      { r: N.E2, l: [12, null, 10, null, 7, null, 10, 7, 5, null, 3, null, 5, null, 7, null] },
+      { r: N.E2, l: [0, 3, 0, null, 7, null, 3, null, 0, 3, 5, null, 3, null, 0, null] },
+      { r: N.C2, l: [-4, 0, -4, null, 3, null, 0, null, 5, null, 3, 0, -4, null, 0, 3] },
+      { r: N.B1, l: [-5, null, -5, null, -1, null, 2, null, 4, null, 2, null, -1, null, -5, null] },
+    ],
+    drums: { kick: [0, 4, 8, 10, 12], snare: [4, 12], hat: [2, 6, 10, 14] }, bassOct: [0, 0, 0, 12, 0, 0, 12, 0],
+  };
+  /* dojo: pentatonic, a sparse lead over a steady taiko beat */
+  T.dojo = {
+    bpm: 118, key: N.D4, lead: 'p25', leadVol: 0.09,
+    bars: [
+      { r: N.D2, l: [0, null, null, 3, null, null, 7, null, 5, null, null, 3, null, null, 0, null] },
+      { r: N.D2, l: [10, null, 7, null, 5, null, null, null, 3, null, 5, null, 7, null, null, null] },
+      { r: N.G2, l: [5, null, null, 7, null, null, 10, null, 12, null, null, 10, null, null, 7, null] },
+      { r: N.A2, l: [7, null, 5, null, 3, null, 0, null, -2, null, 0, null, 3, null, null, null] },
+      { r: N.D2, l: [12, null, 10, 7, null, 10, null, null, 7, null, 5, null, 3, null, 5, null] },
+      { r: N.D2, l: [0, 3, 5, null, 7, null, 5, 3, 0, null, null, null, 3, null, 0, null] },
+      { r: N.G2, l: [5, null, 7, null, 10, null, 12, null, 14, null, 12, null, 10, null, 7, null] },
+      { r: N.A2, l: [7, null, null, 5, null, null, 3, null, 0, null, null, null, null, null, null, null] },
+    ],
+    drums: { kick: [0, 3, 8, 11], snare: [6, 14], hat: [2, 4, 10, 12] }, bassOct: [0, 0, 12, 0, 0, 0, 12, 0],
+  };
+  /* docks: a rolling sea-shanty feel, major */
+  T.docks = {
+    bpm: 140, key: N.D4, lead: 'p25', leadVol: 0.09,
+    bars: [
+      { r: N.D2, l: [0, null, 4, null, 7, null, 12, null, 11, null, 7, null, 4, null, 7, null] },
+      { r: N.D2, l: [9, null, 7, null, 4, null, 7, null, 4, null, 2, null, 0, null, null, null] },
+      { r: N.G2, l: [-5, null, 2, null, 7, null, 11, null, 14, null, 11, null, 7, null, 2, null] },
+      { r: N.A2, l: [4, null, 7, null, 9, null, 7, null, 4, null, 1, null, 4, null, null, null] },
+      { r: N.D2, l: [12, null, 11, 12, 14, null, 12, null, 9, null, 7, null, 9, null, 12, null] },
+      { r: N.B2, l: [11, null, 9, null, 6, null, 9, null, 6, null, 3, null, 6, null, null, null] },
+      { r: N.G2, l: [7, null, 11, null, 14, null, 11, null, 7, null, 2, null, 7, null, 11, null] },
+      { r: N.A2, l: [9, null, 7, null, 4, 7, 9, null, 12, null, 9, null, 7, null, null, null] },
+    ],
+    drums: { kick: [0, 6, 8, 14], snare: [4, 12], hat: [0, 2, 4, 6, 8, 10, 12, 14] }, bassOct: [0, 12, 0, 12, 0, 12, 0, 12],
+  };
+  /* rooftop: fast and tense, a rising line over a pounding bass */
+  T.roof = {
+    bpm: 156, key: N.E4, lead: 'p25', leadVol: 0.09,
+    bars: [
+      { r: N.E2, l: [0, 0, null, 7, 0, null, 10, null, 7, null, 5, null, 3, null, 5, 7] },
+      { r: N.E2, l: [12, null, 10, 12, 15, null, 12, null, 10, 7, null, 5, 7, null, null, null] },
+      { r: N.C2, l: [-4, -4, null, 3, -4, null, 5, null, 3, null, 0, null, -4, null, 0, 3] },
+      { r: N.D2, l: [-2, -2, null, 5, -2, null, 7, null, 5, 3, null, 0, 3, null, 5, 7] },
+      { r: N.E2, l: [7, null, 12, null, 15, null, 19, null, 15, null, 12, null, 10, 12, 10, 7] },
+      { r: N.E2, l: [0, 3, 7, 12, 7, 3, 0, null, 3, 7, 10, 15, 10, 7, 3, null] },
+      { r: N.C2, l: [8, null, 8, 7, 3, null, 7, null, 8, null, 12, null, 15, null, 12, 8] },
+      { r: N.B1, l: [11, 11, null, 14, 11, null, 18, null, 14, null, 11, null, 7, null, 11, 14] },
+    ],
+    drums: { kick: [0, 2, 6, 8, 10, 14], snare: [4, 12], hat: [0, 2, 4, 6, 8, 10, 12, 14] }, bassOct: [0, 12, 0, 12, 0, 12, 0, 12],
+  };
+  /* final boss: the boss riff with a higher, nastier second half */
+  T.boss2 = {
+    bpm: 180, key: N.A4, lead: 'p12', leadVol: 0.085,
+    bars: [
+      { r: N.A2, l: [0, 1, 0, 12, 11, 12, 0, 1, 0, 7, 6, 7, 0, 1, 0, null] },
+      { r: N.A2, l: [12, 13, 12, 19, 18, 19, 12, 13, 12, 7, 6, 7, 5, 4, 3, null] },
+      { r: N.F2, l: [5, 6, 5, 17, 16, 17, 5, 6, 5, 12, 11, 12, 5, 4, 3, null] },
+      { r: N.E2, l: [4, 4, 4, 11, 10, 11, 4, 3, 4, 7, 6, 7, 11, 10, 4, null] },
+    ],
+    drums: { kick: [0, 2, 3, 8, 10, 11], snare: [4, 12], hat: [0, 2, 4, 6, 8, 10, 12, 14, 15] }, bassOct: [0, 12, 0, 12, 0, 12, 0, 12],
+  };
   A.tracks = T;
 
   let mTimer = 0, mTrack = null, mNext = 0, mStep = 0, mName = null;

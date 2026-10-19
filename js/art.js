@@ -27,6 +27,8 @@
     ctx.globalAlpha = 0.35 * alpha; ctx.lineWidth = w * 0.6; path(0.45, 0.35);
     ctx.globalAlpha = 1;
   };
+  /* near-layer walls are filled with (nearly opaque) paper so the far parallax layer does not show through them */
+  A.fillPaper = function (ctx, x, y, w, h) { ctx.fillStyle = 'rgba(241,233,212,0.94)'; ctx.fillRect(x, y, w, h); };
   A.hatch = function (ctx, x, y, w, h, gap, angle, alpha, col) {
     ctx.save();
     ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
@@ -52,6 +54,7 @@
   /* ---------- the sketched backdrop (rendered once per scale into two parallax layers) ---------- */
   const INK = '#3f3d37';
   function building(x, bx, by, w, h, r, kind) {
+    A.fillPaper(x, bx, by, w, h);
     /* outline */
     A.graphite(x, [bx, by + h, bx, by, bx + w, by, bx + w, by + h], 1.5, 0.95, INK);
     A.hatch(x, bx, by, w, h, 5, 0.9, 0.07);
@@ -112,6 +115,7 @@
     A.hatch(x, px + 36, base - 24, 10, 24, 2, -0.8, 0.3);
   }
   A.buildBackdrop = function (level, f) {
+    if (level.theme && A.themes && A.themes[level.theme]) return A.themes[level.theme](level, f);
     const W = level.width, H = C.H, far = mk((W * 0.5 + C.W) * f, H * f), near = mk(W * f, H * f);
     /* far skyline */
     let x = far.getContext('2d'), r = U.rng(level.seed || 3);
@@ -208,6 +212,10 @@
     }
     if (has('scar')) { ctx.strokeStyle = C.INK; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.moveTo(hx + 2, hy + 0.8); ctx.lineTo(hx + 4.6, hy + 3.4); ctx.moveTo(hx + 4.4, hy + 0.9); ctx.lineTo(hx + 2.2, hy + 3.3); ctx.stroke(); }
     if (has('beard')) { ctx.strokeStyle = C.INK; ctx.lineWidth = 0.8; ctx.beginPath(); for (let i = 0; i < 5; i++) { ctx.moveTo(hx + 1 + i * 0.9, hy + 4.2); ctx.lineTo(hx + 2 + i * 1.1, hy + 7.2); } ctx.stroke(); }
+    if (has('hardhat')) { ctx.fillStyle = '#e8b81f'; ctx.strokeStyle = C.INK; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.arc(hx, hy - 1.2, HEADR + 0.9, 3.14, 6.28); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.fillRect(hx - 1.2, hy - HEADR - 1.2, 2.4, 2.6); ctx.beginPath(); ctx.moveTo(hx - 7, hy - 1); ctx.lineTo(hx + 8, hy - 1); ctx.lineWidth = 1.6; ctx.stroke(); }
+    if (has('cap')) { ctx.fillStyle = '#f4f1e6'; ctx.strokeStyle = C.INK; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.arc(hx, hy - 1.6, HEADR + 0.7, 3.14, 6.28); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#1d1c1a'; ctx.fillRect(hx - HEADR - 0.7, hy - 2.4, HEADR * 2 + 1.4, 1.7); ctx.fillRect(hx + 1, hy - 2.4, 6.5, 1.1); }
+    if (has('bowler')) { ctx.fillStyle = '#1d1c1a'; ctx.beginPath(); ctx.arc(hx, hy - 2.2, HEADR - 0.4, 3.14, 6.28); ctx.closePath(); ctx.fill(); ctx.fillRect(hx - 8, hy - 2.6, 16, 1.6); }
+    if (has('crown')) { ctx.fillStyle = '#d9b21f'; ctx.strokeStyle = C.INK; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.moveTo(hx - 5, hy - 5); ctx.lineTo(hx - 5.6, hy - 11); ctx.lineTo(hx - 2.4, hy - 8); ctx.lineTo(hx, hy - 12.4); ctx.lineTo(hx + 2.4, hy - 8); ctx.lineTo(hx + 5.6, hy - 11); ctx.lineTo(hx + 5, hy - 5); ctx.closePath(); ctx.fill(); ctx.stroke(); }
     if (has('shades')) { ctx.fillStyle = '#1d1c1a'; ctx.fillRect(hx - 0.6, hy - 2.6, 6.2, 2.6); ctx.fillRect(hx - 5.4, hy - 2.2, 5, 0.9); ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.fillRect(hx + 0.6, hy - 2, 1.5, 0.8); }
   }
 
@@ -303,8 +311,10 @@
       ctx.restore();
     }
     /* grabbed/grabbing hand dot and fists */
-    ctx.fillStyle = col; ctx.beginPath(); ctx.arc(aF[4], aF[5], 1.45, 0, 6.3); ctx.fill();
-    if (!f.weapon || true) { ctx.beginPath(); ctx.arc(aB[4], aB[5], 1.45, 0, 6.3); ctx.fill(); }
+    const glove = look.props && look.props.indexOf('gloves') >= 0, gr = glove ? 3.4 : 1.45;
+    ctx.fillStyle = glove ? '#8a1c14' : col; ctx.beginPath(); ctx.arc(aF[4], aF[5], gr, 0, 6.3); ctx.fill();
+    ctx.beginPath(); ctx.arc(aB[4], aB[5], gr, 0, 6.3); ctx.fill();
+    if (glove) { ctx.strokeStyle = C.INK; ctx.lineWidth = 0.7; ctx.beginPath(); ctx.arc(aF[4], aF[5], gr, 0, 6.3); ctx.stroke(); ctx.beginPath(); ctx.arc(aB[4], aB[5], gr, 0, 6.3); ctx.stroke(); }
     ctx.restore();
   };
 

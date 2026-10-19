@@ -109,7 +109,8 @@
   };
 
   UI.showGameOver = function (score, level, victory) {
-    $('goTitle').textContent = victory ? 'LEVEL CLEAR!' : 'GAME OVER'; $('goTitle').className = victory ? 'win' : 'over';
+    $('goTitle').textContent = victory ? 'YOU WIN!' : 'GAME OVER';
+    $('goSub').textContent = victory ? 'The Kingpin is down and the streets are quiet again.' : ''; $('goTitle').className = victory ? 'win' : 'over';
     $('goScore').textContent = U.fmt(score);
     $('goStage').textContent = level;
     const q = G.scores.qualifies(score);

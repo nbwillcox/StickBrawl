@@ -13,6 +13,22 @@
     boss: { kind: 'boss', name: 'THE CHIEF', team: 'e', speed: 34, hp: 150, score: 5000, reach: 38, cool: [0.9, 1.7], attacks: [['e_hook', 3], ['e_kick', 2], ['e_jab', 1], ['e_slam', 1]], hop: 0.35, rush: { move: 'e_charge', min: 70, max: 190 }, armor: 4, noGrab: true, stunMul: 0.5, food: 0, boss: 'big', look: look({ scale: 1.45, line: 3, props: ['hat', 'scar', 'beard', 'vest'], hatBand: '#c9a227' }) },
   };
 
+  const more = {
+    bruiser: { kind: 'bruiser', name: 'BRUISER', team: 'e', speed: 30, hp: 34, score: 700, reach: 36, cool: [1.0, 1.8], attacks: [['e_hook', 2], ['e_jab', 1]], armor: 2, grabs: 0.1, stunMul: 0.8, food: 0.12, weapons: 0.3, look: look({ scale: 1.12, line: 2.7, props: ['hardhat', 'belt'] }) },
+    boxer: { kind: 'boxer', name: 'THE BOXER', team: 'e', speed: 46, hp: 80, score: 2200, reach: 28, cool: [0.4, 0.9], attacks: [['e_quick', 5], ['e_hook', 1], ['e_kick', 1]], armor: 3, noGrab: true, stunMul: 0.6, food: 1, boss: 'mini', look: look({ scale: 1.15, line: 2.8, props: ['gloves', 'band'], bandCol: '#1d1c1a' }) },
+    foreman: { kind: 'foreman', name: 'THE FOREMAN', team: 'e', speed: 32, hp: 170, score: 5500, reach: 38, cool: [0.9, 1.6], attacks: [['e_hook', 3], ['e_slam', 2], ['e_kick', 1]], rush: { move: 'e_charge', min: 70, max: 190 }, armor: 4, noGrab: true, stunMul: 0.5, boss: 'big', look: look({ scale: 1.45, line: 3, props: ['hardhat', 'beard', 'vest', 'scar'] }) },
+    karateka: { kind: 'karateka', name: 'KARATEKA', team: 'e', speed: 56, hp: 22, score: 600, reach: 26, cool: [0.6, 1.2], attacks: [['e_quick', 3], ['e_spin', 1], ['e_kick', 2]], hop: 0.25, food: 0.1, weapons: 0.05, look: look({ props: ['band', 'belt'], bandCol: '#f4f1e6' }) },
+    shadow: { kind: 'shadow', name: 'TWIN SHADOW', team: 'e', speed: 64, hp: 50, score: 1500, reach: 27, cool: [0.5, 1.0], attacks: [['e_kick', 2], ['e_spin', 2], ['e_quick', 2]], hop: 0.6, armor: 2, noGrab: true, stunMul: 0.7, food: 0.5, boss: 'mini', look: look({ scale: 1.08, props: ['band', 'tails', 'wrap'], bandCol: '#1d1c1a' }) },
+    sensei: { kind: 'sensei', name: 'THE SENSEI', team: 'e', speed: 48, hp: 160, score: 6000, reach: 30, cool: [0.6, 1.2], attacks: [['e_quick', 3], ['e_spin', 2], ['e_kick', 1], ['e_hook', 1]], hop: 0.5, rush: { move: 'e_charge', min: 70, max: 190 }, armor: 3, noGrab: true, stunMul: 0.5, boss: 'big', look: look({ scale: 1.3, line: 2.8, props: ['band', 'beard', 'scar', 'belt'], bandCol: '#f4f1e6' }) },
+    sailor: { kind: 'sailor', name: 'SAILOR', team: 'e', speed: 38, hp: 26, score: 450, reach: 26, cool: [0.9, 1.6], attacks: [['e_jab', 3], ['e_kick', 1]], grabs: 0.2, food: 0.1, weapons: 0.6, look: look({ props: ['cap'] }) },
+    skipper: { kind: 'skipper', name: 'THE SKIPPER', team: 'e', speed: 28, hp: 100, score: 2500, reach: 38, cool: [1.0, 1.8], attacks: [['e_hook', 2], ['e_slam', 2], ['e_jab', 1]], armor: 3, noGrab: true, stunMul: 0.6, food: 1, boss: 'mini', look: look({ scale: 1.3, line: 2.9, props: ['cap', 'beard', 'vest'] }) },
+    harbor: { kind: 'harbor', name: 'HARBORMASTER', team: 'e', speed: 34, hp: 180, score: 6500, reach: 38, cool: [0.8, 1.5], attacks: [['e_hook', 3], ['e_slam', 2], ['e_kick', 1], ['e_jab', 1]], hop: 0.3, rush: { move: 'e_charge', min: 70, max: 190 }, armor: 4, noGrab: true, stunMul: 0.5, boss: 'big', look: look({ scale: 1.45, line: 3, props: ['hat', 'beard', 'scar', 'vest'], hatBand: '#2f62e8' }) },
+    agent: { kind: 'agent', name: 'AGENT', team: 'e', speed: 60, hp: 24, score: 650, reach: 26, cool: [0.5, 1.1], attacks: [['e_quick', 3], ['e_kick', 2]], hop: 0.2, startKnife: 0.55, food: 0.1, look: look({ props: ['bowler', 'shades'] }) },
+    bodyguard: { kind: 'bodyguard', name: 'BODYGUARD', team: 'e', speed: 30, hp: 120, score: 3000, reach: 38, cool: [0.9, 1.6], attacks: [['e_hook', 3], ['e_slam', 1], ['e_kick', 2]], armor: 3, noGrab: true, stunMul: 0.6, food: 1, boss: 'mini', look: look({ scale: 1.3, line: 2.9, props: ['bowler', 'shades', 'vest'] }) },
+    kingpin: { kind: 'kingpin', name: 'THE KINGPIN', team: 'e', speed: 38, hp: 240, score: 9000, reach: 38, cool: [0.7, 1.3], attacks: [['e_hook', 3], ['e_slam', 2], ['e_kick', 2], ['e_spin', 1], ['e_quick', 1]], hop: 0.4, rush: { move: 'e_charge', min: 70, max: 190 }, armor: 5, noGrab: true, stunMul: 0.45, summon: ['agent', 'agent'], boss: 'big', look: look({ scale: 1.5, line: 3.1, props: ['crown', 'shades', 'beard', 'scar', 'vest'] }) },
+  };
+  Object.assign(DEFS, more);
+
   function weightedPick(list) {
     let tot = 0; for (const a of list) tot += a[1];
     let r = Math.random() * tot;
@@ -31,6 +47,7 @@
     e.hp = e.maxhp = def.hp;
     e.ai = { side: Math.random() < 0.5 ? -1 : 1, tok: false, tokT: 0, cd: U.rand(0.3, 1.3), attacking: false, yoff: U.rand(-16, 16), wantsWeapon: Math.random() < (def.weapons || 0), ringR: 62 + Math.random() * 22, retarget: 0 };
     e.kind = kind;
+    if (def.startKnife && Math.random() < def.startKnife) e.weapon = { type: 'knife', uses: 6 };
     return e;
   }
 
@@ -50,6 +67,7 @@
     ai.cd -= dt;
     if (e.def.boss && !ai.enraged && e.hp > 0 && e.hp < e.maxhp * 0.5) {
       ai.enraged = true; e.speedMul = 1.3; ai.cdMul = 0.65;
+      if (e.def.summon) for (const k of e.def.summon) g.summon(k);
       G.audio.sfx.warn(); G.fx.addShake(5); G.fx.text(e.x, e.y - 74 * (e.look.scale || 1), 'ENRAGED!', '#c62a1f', 10);
     }
     const onScreen = e.x > g.camX - 4 && e.x < g.camX + C.W + 4;

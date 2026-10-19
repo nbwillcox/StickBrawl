@@ -13,8 +13,8 @@
   <title>StickBrawl</title>
   <meta name="description" content="StickBrawl - a free pencil-sketch beat 'em up: punch, kick, spin-kick and grab your way through the streets with bats, nunchaku and knives. Free to play, not for money.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23f1e9d4'/%3E%3Ccircle cx='16' cy='8' r='4' fill='none' stroke='%232f62e8' stroke-width='2.4'/%3E%3Cpath d='M16 12v9M16 15l-7 4M16 15l7-3M16 21l-5 7M16 21l6 6' stroke='%232f62e8' stroke-width='2.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/style.css?v=9">
-  <link rel="stylesheet" href="css/mobile.css?v=9">
+  <link rel="stylesheet" href="css/style.css?v=13">
+  <link rel="stylesheet" href="css/mobile.css?v=13">
 </head>
 <body>
   <canvas id="game" aria-label="StickBrawl game screen"></canvas>
@@ -71,6 +71,7 @@
 
     <section id="gameover" class="screen hidden">
       <h2 id="goTitle" class="over">GAME OVER</h2>
+      <p class="tag" id="goSub"></p>
       <p class="final">Score <b id="goScore">0</b> &middot; Level <b id="goStage">1</b></p>
       <div id="goEntry" class="entry hidden">
         <p class="newhs">NEW HIGH SCORE! Enter your initials</p>
@@ -86,21 +87,22 @@
 
   <noscript><p style="padding:2rem">StickBrawl needs JavaScript enabled.</p></noscript>
 
-  <script src="js/util.js?v=9"></script>
-  <script src="js/config.js?v=9"></script>
-  <script src="js/audio.js?v=9"></script>
-  <script src="js/art.js?v=9"></script>
-  <script src="js/fx.js?v=9"></script>
-  <script src="js/input.js?v=9"></script>
-  <script src="js/scores.js?v=9"></script>
-  <script src="js/fighter.js?v=9"></script>
-  <script src="js/enemies.js?v=9"></script>
-  <script src="js/level.js?v=9"></script>
-  <script src="js/game.js?v=9"></script>
-  <script src="js/hud.js?v=9"></script>
-  <script src="js/ui.js?v=9"></script>
-  <script src="js/touchcfg.js?v=9"></script>
-  <script src="js/mobile.js?v=9"></script>
-<script src="js/main.js?v=9"></script>
+  <script src="js/util.js?v=13"></script>
+  <script src="js/config.js?v=13"></script>
+  <script src="js/audio.js?v=13"></script>
+  <script src="js/art.js?v=13"></script>
+  <script src="js/themes.js?v=13"></script>
+  <script src="js/fx.js?v=13"></script>
+  <script src="js/input.js?v=13"></script>
+  <script src="js/scores.js?v=13"></script>
+  <script src="js/fighter.js?v=13"></script>
+  <script src="js/enemies.js?v=13"></script>
+  <script src="js/level.js?v=13"></script>
+  <script src="js/game.js?v=13"></script>
+  <script src="js/hud.js?v=13"></script>
+  <script src="js/ui.js?v=13"></script>
+  <script src="js/touchcfg.js?v=13"></script>
+  <script src="js/mobile.js?v=13"></script>
+<script src="js/main.js?v=13"></script>
 </body>
 </html>

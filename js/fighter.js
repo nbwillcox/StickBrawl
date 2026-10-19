@@ -86,6 +86,7 @@
     e_hook: { s: 0.5, a: 0.12, r: 0.6, dmg: 6, kd: true, kdv: 100, reach: 38, pw: 'p3w', ps: 'p3s', lunge: 70, snd: 'punchH', hs: 0.1, sh: 5 },
     e_slam: { s: 0.6, a: 0.12, r: 0.7, dmg: 5, kd: true, kdv: 95, reach: 52, both: true, pw: 'throw', ps: 'slamS', lunge: 0, snd: 'thud', fx: 'slam', hs: 0.1, sh: 6 },
     e_charge: { s: 0.42, a: 0.34, r: 0.5, dmg: 5, kd: true, kdv: 100, reach: 30, pw: 'p3w', ps: 'p3s', lunge: 0, drive: 215, snd: 'punchH', swing: 'swing', hs: 0.1, sh: 5 },
+    e_spin: { s: 0.4, a: 0.3, r: 0.42, dmg: 4, kd: true, kdv: 90, reach: 30, both: true, spin: true, pw: 'kickw', ps: 'spin', lunge: 0, drive: 70, snd: 'kick', swing: 'swing', hs: 0.08, sh: 3.5 },
     e_bat: { s: 0.4, a: 0.11, r: 0.5, dmg: 6, kd: true, kdv: 95, reach: 41, pw: 'batw', ps: 'bats', lunge: 30, snd: 'bat', swing: 'swing', wep: 'bat', hs: 0.1, sh: 4.5 },
     e_nun: { s: 0.3, a: 0.09, r: 0.4, dmg: 3, stun: 0.32, reach: 33, pw: 'nu1w', ps: 'nu1s', lunge: 24, snd: 'punch', swing: 'whoosh', wep: 'nunchaku', hs: 0.05, sh: 1.8 },
     e_knife: { s: 0.28, a: 0.08, r: 0.42, dmg: 4, stun: 0.38, reach: 26, pw: 'knw', ps: 'kns', lunge: 30, snd: 'stab', swing: 'whoosh', wep: 'knife', hs: 0.06, sh: 1.8 },
@@ -436,6 +437,7 @@
           const mv = this.move;
           if (!mv) { p = POSES.idle; break; }
           if (this.thrownDone) { p = lerpPose(POSES.throw, POSES.idle, U.clamp((this.t - 0.09) / 0.2, 0, 1)); break; }
+          if (mv.spin && this.t >= mv.s && this.t < mv.s + mv.a) { p = Object.assign({}, POSES.spin); p.sx = Math.cos((this.t - mv.s) * U.TAU * 3); break; }
           const a = POSES[mv.pw], b = POSES[mv.ps], base = idle(), t = this.t;
           const start = (this.def.team === 'e' && !ws) ? POSES.idle : base;
           if (t < mv.s) p = lerpPose(start, a, U.easeOut(U.clamp(t / mv.s, 0, 1)));

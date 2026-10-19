@@ -50,7 +50,7 @@
   M.startGame = function () {
     A.resume(); I.clear();
     G.debug.lab = G.debug.lab && true;
-    Game.stage = 0;
+    Game.stage = Math.min(G.debug.level || 0, G.level.list.length - 1);
     Game.reset(false);
     Game.onOver = (v) => { M.mode = 'over'; A.stopMusic(); UI.showGameOver(Game.score, Game.stage + 1, v); };
     M.mode = 'play';

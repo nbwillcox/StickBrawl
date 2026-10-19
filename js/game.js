@@ -21,13 +21,13 @@
     const lv = Game.level;
     Game.camX = 0; Game.camMax = 0; Game.waveIdx = 0; Game.waveActive = false; Game.queue = []; Game.waveItems = 0;
     Game.enemies = []; Game.props = []; Game.items = []; Game.projs = []; Game.tokens = new Set(); Game.goT = 0; Game.goBeep = 0;
-    Game.introT = 0; Game.bossT = 0; Game.clearT = 0; Game.cleared = false; Game.respawnT = 0; Game.timeLeft = C.STAGE_TIME; Game.bossBar = null; Game.lastHitE = null; Game.lastHitT = 0;
+    Game.introT = 0; Game.bossT = 0; Game.clearT = 0; Game.cleared = false; Game.respawnT = 0; Game.timeLeft = Game.level.time || C.STAGE_TIME; Game.bossBar = null; Game.lastHitE = null; Game.lastHitT = 0;
     FX.reset();
     const p = new F.Fighter(Game, F.PLAYER, lv.start.x, lv.start.y);
     p.hp = p.maxhp = C.PLAYER_HP;
     Game.player = p;
     Game.mode = 'play';
-    if (G.debug.wave && !G.debug.lab) {
+    if (G.debug.wave && !G.debug.lab && Game.stage === G.debug.level) {
       Game.waveIdx = Math.min(G.debug.wave, lv.waves.length - 1);
       const w = lv.waves[Game.waveIdx];
       Game.camX = Game.camMax = w.at; p.x = w.at + 70;
@@ -170,9 +170,10 @@
     Game.queue = (w.enemies || []).map((s) => ({ k: s.k, side: s.side, t: s.d }));
     for (const it of (w.items || [])) Game.addItem(it.t, it.x, it.y, it.drop);
     if (w.mini || w.boss) { A.sfx.warn(); Game.bossT = 0; }
-    if (w.boss) { A.music('boss'); Game.bossT = 0; }
+    if (w.boss) { A.music(Game.stage === G.level.list.length - 1 ? 'boss2' : 'boss'); Game.bossT = 0; }
     Game.curWave = w;
   }
+  Game.summon = function (k) { spawnEnemy({ k, side: Math.random() < 0.5 ? 'l' : 'r' }); };
   function spawnEnemy(s) {
     const x = s.side === 'l' ? Game.camX - 22 : Game.camX + C.W + 22, y = U.rand(C.YMIN + 8, C.YMAX - 6);
     const e = E.create(Game, s.k, x, y);
@@ -227,7 +228,10 @@
       /* the tally ticks into the score, then the run ends */
       if (Game.clearT > 1.6 && Game.timeBonus > 0) { const n = Math.min(Game.timeBonus, 400); Game.timeBonus -= n; Game.addScore(n); if (Math.floor(Game.clearT * 20) % 2 === 0) A.sfx.tick(); }
       else if (Game.clearT > 1.6 && Game.lifeBonus > 0) { const n = Math.min(Game.lifeBonus, 200); Game.lifeBonus -= n; Game.addScore(n); }
-      if (Game.clearT > 6 && Game.onOver) { const cb = Game.onOver; Game.onOver = null; cb(true); }
+      if (Game.clearT > 6) {
+        if (!G.debug.lab && Game.stage + 1 < G.level.list.length) { Game.stage++; Game.level = Game.levelDef(); Game.loadLevel(); A.music(Game.level.music); return; }
+        if (Game.onOver) { const cb = Game.onOver; Game.onOver = null; cb(true); }
+      }
       p.intent.dx = p.intent.dy = 0; p.intent.punch = p.intent.kick = p.intent.jump = false;
       p.update(dt, Game);
       for (const e of Game.enemies) e.update(dt, Game);
@@ -276,6 +280,7 @@
     p.hp = p.maxhp; p.dying = false; p.killed = false; p.weapon = null;
     p.x = Game.camX + 50; p.y = 214; p.z = 0; p.vx = p.vy = p.vz = 0; p.face = 1;
     p.to('idle'); p.inv = 2.2; Game.respawnT = 0;
+    if (Game.timeLeft < 60) Game.timeLeft = 60;                      /* running out of time costs a life, but you get a minute back */
     Game.tokens.clear();
     for (const e of Game.enemies) { e.ai && (e.ai.tok = false); }
   }
@@ -343,11 +348,13 @@
   /* ---------- drawing ---------- */
   Game.backdrop = null;
   Game.ensureBackdrop = function (f) {
+    Game.bdF = f;
     if (Game.backdrop && Game.backdrop.f === f && Game.backdrop.lv === Game.level) return;
     const b = ART.buildBackdrop(Game.level, f); b.lv = Game.level; Game.backdrop = b;
   };
 
   Game.render = function (ctx) {
+    if ((!Game.backdrop || Game.backdrop.lv !== Game.level) && Game.bdF) Game.ensureBackdrop(Game.bdF);
     const cam = Game.camX, f = Game.backdrop ? Game.backdrop.f : 1;
     if (Game.backdrop) {
       const b = Game.backdrop, farX = cam * 0.45;

@@ -37,7 +37,7 @@
   };
   const qp = new URLSearchParams(location.search);
   /* ?debug=1 shows spawn keys + hitboxes, ?god=1 stops damage, ?wave=N starts at that wave, ?lab=1 is an empty arena */
-  G.debug = { on: qp.get('debug') === '1', god: qp.get('god') === '1', wave: parseInt(qp.get('wave'), 10) || 0, lab: qp.get('lab') === '1', boxes: qp.get('boxes') === '1' };
+  G.debug = { on: qp.get('debug') === '1', god: qp.get('god') === '1', wave: parseInt(qp.get('wave'), 10) || 0, level: Math.max(0, (parseInt(qp.get('level'), 10) || 1) - 1), theme: qp.get('theme') || '', lab: qp.get('lab') === '1', boxes: qp.get('boxes') === '1' };
   G.C = C;
   G.settings = S;
 })((window.SGS = window.SGS || {}));

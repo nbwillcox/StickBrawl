@@ -2,7 +2,7 @@
 
 A free, original pencil-sketch beat 'em up in the spirit of the 80s arcade street brawlers. You are the blue stick figure; the red ones want you gone. Everything is drawn in code (steady graphite lines on paper), and all music and sound effects are synthesized with the Web Audio API. No image or audio files, no build step.
 
-**Status:** early sandbox. Combat engine, one draft level (street) with a mini boss and a big boss. More levels to come.
+**Status:** playable. Five levels (streets, warehouse, dojo, docks, rooftop), each with a mini boss and a big boss, with their own backdrop and music.
 
 ## Controls
 
