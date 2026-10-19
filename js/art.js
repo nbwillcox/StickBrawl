@@ -28,7 +28,28 @@
     ctx.globalAlpha = 1;
   };
   /* near-layer walls are filled with (nearly opaque) paper so the far parallax layer does not show through them */
-  A.fillPaper = function (ctx, x, y, w, h) { ctx.fillStyle = 'rgba(241,233,212,0.94)'; ctx.fillRect(x, y, w, h); };
+  const _pat = {};
+  A.fillPaper = function (ctx, x, y, w, h) {
+    const f = A._f || 1;
+    if (!_pat[f]) { _pat[f] = ctx.createPattern(A.paperTile(f), 'repeat'); if (_pat[f].setTransform) _pat[f].setTransform(new DOMMatrix([1 / f, 0, 0, 1 / f, 0, 0])); }
+    ctx.fillStyle = _pat[f]; ctx.fillRect(x, y, w, h);
+  };
+  /* a soft vertical colour wash (sky, floor shading) */
+  A.wash = function (ctx, x, y, w, h, c0, c1) {
+    const g = ctx.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, c0); g.addColorStop(1, c1);
+    ctx.fillStyle = g; ctx.fillRect(x, y, w, h);
+  };
+  /* darker where the wall meets the floor, then a gentle fall-off toward the bottom of the screen */
+  A.groundShade = function (ctx, W) {
+    A.wash(ctx, 0, 168, W, 14, 'rgba(70,58,38,0.16)', 'rgba(70,58,38,0)');
+    A.wash(ctx, 0, 196, W, 74, 'rgba(70,58,38,0)', 'rgba(70,58,38,0.12)');
+  };
+  A.contact = function (ctx, cx, y, rx) {
+    ctx.save(); ctx.translate(cx, y); ctx.scale(1, 0.28);
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, rx); g.addColorStop(0, 'rgba(50,42,30,0.28)'); g.addColorStop(1, 'rgba(50,42,30,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, rx, 0, 6.3); ctx.fill(); ctx.restore();
+  };
+  A.skyWash = function (ctx, w, c) { A.wash(ctx, 0, 0, w, 130, c || 'rgba(110,140,185,0.24)', 'rgba(110,140,185,0)'); };
   A.hatch = function (ctx, x, y, w, h, gap, angle, alpha, col) {
     ctx.save();
     ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
@@ -66,6 +87,7 @@
     for (let ry = 0; ry < rows; ry++) {
       for (let cx = 0; cx < cols; cx++) {
         const wx = bx + 8 + cx * gx + 4, wy = by + 10 + ry * 30, ww = gx - 8, wh = 20;
+        A.fillPaper(x, wx, wy, ww, wh);
         A.graphite(x, [wx, wy, wx + ww, wy, wx + ww, wy + wh, wx, wy + wh, wx, wy], 1.1, 0.85, INK);
         A.graphite(x, [wx + ww / 2, wy, wx + ww / 2, wy + wh], 0.8, 0.6, INK);
         if (r() < 0.45) A.hatch(x, wx, wy, ww, wh, 2.6, 0.7, 0.35);
@@ -77,53 +99,62 @@
     const sy = by + h - 40;
     if (kind === 'shop') {
       const dw = 26, dx = bx + 18 + r() * (w - 70);
+      A.fillPaper(x, dx, sy + 6, dw, by + h - sy - 6);
       A.graphite(x, [dx, by + h, dx, sy + 6, dx + dw, sy + 6, dx + dw, by + h], 1.4, 0.95, INK);
       A.hatch(x, dx + 2, sy + 8, dw - 4, 32, 3, 0.8, 0.28);
       x.fillStyle = INK; x.beginPath(); x.arc(dx + dw - 5, sy + 24, 1.2, 0, 6.3); x.fill();
       const sx0 = bx + 6, sw = Math.max(40, w - dw - 40);
+      A.fillPaper(x, sx0, sy, sw, 14);
       A.graphite(x, [sx0, sy, sx0 + sw, sy, sx0 + sw, sy + 14, sx0, sy + 14, sx0, sy], 1.3, 0.9, INK);
       x.fillStyle = INK; x.globalAlpha = 0.8; x.font = '700 10px ' + FONT; x.textBaseline = 'middle';
       x.fillText(U.pick(['PIZZA', 'BAR', 'HOTEL', 'DINER', 'PAWN', 'VIDEO', 'NOODLES', 'LIQUOR']), sx0 + 5, sy + 8); x.globalAlpha = 1;
       for (let i = 0; i < 6; i++) A.graphite(x, [sx0 + i * (sw / 6), sy + 14, sx0 + i * (sw / 6) + sw / 12, sy + 20, sx0 + (i + 1) * (sw / 6), sy + 14], 1, 0.7, INK);
     } else {
       const dx = bx + 14 + r() * (w - 50);
+      A.fillPaper(x, dx, sy + 4, 22, by + h - sy - 4);
       A.graphite(x, [dx, by + h, dx, sy + 4, dx + 22, sy + 4, dx + 22, by + h], 1.4, 0.95, INK);
       A.graphite(x, [dx + 11, sy + 4, dx + 11, by + h], 1, 0.7, INK);
       A.hatch(x, dx + 2, sy + 6, 7, 30, 2.6, 0.8, 0.3);
     }
   }
   function lamp(x, px, base) {
+    A.contact(x, px, base, 9);
     A.graphite(x, [px, base, px, base - 72, px + 14, base - 78], 1.7, 0.95, INK);
     A.graphite(x, [px + 10, base - 79, px + 22, base - 79, px + 20, base - 74, px + 12, base - 74, px + 10, base - 79], 1.2, 0.9, INK);
     A.hatch(x, px + 11, base - 78, 10, 4, 2, 0.8, 0.5);
     A.graphite(x, [px - 4, base, px + 4, base], 2, 0.9, INK);
   }
   function hydrant(x, px, base) {
+    A.contact(x, px, base, 11); A.fillPaper(x, px - 5, base - 16, 10, 16);
     A.graphite(x, [px - 5, base, px - 5, base - 12, px - 3, base - 16, px + 3, base - 16, px + 5, base - 12, px + 5, base], 1.4, 0.95, INK);
     A.graphite(x, [px - 8, base - 9, px + 8, base - 9], 1.4, 0.9, INK);
     A.hatch(x, px - 4, base - 15, 8, 14, 2.4, 0.8, 0.4);
   }
   function crate(x, px, base, s) {
+    A.contact(x, px + s / 2, base, s * 0.8); A.fillPaper(x, px, base - s, s, s);
     A.graphite(x, [px, base, px, base - s, px + s, base - s, px + s, base, px, base], 1.5, 0.95, INK);
     A.graphite(x, [px, base - s, px + s, base, px + s, base - s, px, base], 1, 0.7, INK);
     A.hatch(x, px, base - s, s, s, 3, 0.6, 0.12);
   }
   function dumpster(x, px, base) {
+    A.contact(x, px + 23, base, 30); A.fillPaper(x, px - 2, base - 30, 50, 30);
     A.graphite(x, [px, base, px + 2, base - 26, px + 44, base - 26, px + 46, base, px, base], 1.6, 0.95, INK);
     A.graphite(x, [px - 2, base - 26, px + 48, base - 26, px + 48, base - 30, px - 2, base - 30, px - 2, base - 26], 1.4, 0.9, INK);
     A.hatch(x, px + 2, base - 24, 42, 24, 3, 0.7, 0.3);
     A.hatch(x, px + 36, base - 24, 10, 24, 2, -0.8, 0.3);
   }
   A.buildBackdrop = function (level, f) {
+    A._f = f;
     if (level.theme && A.themes && A.themes[level.theme]) return A.themes[level.theme](level, f);
     const W = level.width, H = C.H, far = mk((W * 0.5 + C.W) * f, H * f), near = mk(W * f, H * f);
     /* far skyline */
     let x = far.getContext('2d'), r = U.rng(level.seed || 3);
     x.scale(f, f);
+    A.fillPaper(x, 0, 0, far.width / f, H); A.skyWash(x, far.width / f);
     let px = -10;
     while (px < W * 0.5 + C.W) {
       const w = 40 + r() * 70, h = 40 + r() * 70, by = 168 - h;
-      x.strokeStyle = INK;
+      A.fillPaper(x, px, by, w, 168 - by);
       A.graphite(x, [px, 168, px, by, px + w, by, px + w, 168], 1.1, 0.4, INK);
       A.hatch(x, px, by, w, h, 6, 0.9 + r() * 0.3, 0.08);
       for (let wy = by + 8; wy < 150; wy += 14) for (let wx = px + 7; wx < px + w - 8; wx += 12) if (r() < 0.55) A.graphite(x, [wx, wy, wx + 5, wy, wx + 5, wy + 7, wx, wy + 7, wx, wy], 0.8, 0.28, INK);
@@ -164,6 +195,7 @@
       const k = r();
       if (k < 0.3) lamp(x, sx, base + 18); else if (k < 0.5) hydrant(x, sx, base + 18); else if (k < 0.75) crate(x, sx, base + 18, 14 + r() * 8); else dumpster(x, sx, base + 20);
     }
+    A.groundShade(x, W);
     return { far, near, f };
   };
 
@@ -293,6 +325,10 @@
     const w = look.line || 2.5;
     const aB = arm(pose.aB), aF = arm(pose.aF), lB = leg(pose.lB), lF = leg(pose.lF);
     f.tailV = (f.tailV || 0) * 0.9;
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = C.PAPER; ctx.globalAlpha = 0.78; ctx.lineWidth = w + 3.6;
+    for (const seg of [aB.slice(0, 6), lB, [hx, hy, tx, ty], lF, aF.slice(0, 6)]) { ctx.beginPath(); ctx.moveTo(seg[0], seg[1]); for (let i = 2; i < seg.length; i += 2) ctx.lineTo(seg[i], seg[i + 1]); ctx.stroke(); }
+    ctx.beginPath(); ctx.arc(hdx, hdy, HEADR + 1.4, 0, 6.3); ctx.stroke();
+    ctx.globalAlpha = 1;
     A.pencil(ctx, aB.slice(0, 6), col, core, w, 0.9);
     A.pencil(ctx, lB, col, core, w);
     A.pencil(ctx, [hx, hy, tx, ty], col, core, w + 0.5);

@@ -32,12 +32,13 @@
   /* ---------- warehouse ---------- */
   TH.warehouse = function (level, f) {
     const L = layers(level, f, 0.5), W = L.W; let x = L.far.getContext('2d'), r = U.rng(21);
-    x.scale(f, f);
+    x.scale(f, f); A._f = f;
+    A.fillPaper(x, 0, 0, L.far.width / f, C.H); A.wash(x, 0, 0, L.far.width / f, 60, 'rgba(60,52,40,0.2)', 'rgba(60,52,40,0)');
     g(x, [0, 26, W * 0.5 + C.W, 26], 1.6, 0.4); g(x, [0, 34, W * 0.5 + C.W, 34], 1, 0.3);
     for (let px = 0; px < W * 0.5 + C.W; px += 46) { g(x, [px, 34, px + 23, 8, px + 46, 34], 1, 0.35); g(x, [px + 23, 8, px + 23, 34], 0.8, 0.3); }
     for (let px = 20; px < W * 0.5 + C.W; px += 110 + r() * 60) {                      /* far shelving */
       const w = 70 + r() * 40, h = 40 + r() * 30;
-      rect(x, px, BASE - h, w, h, 1, 0.35);
+      A.fillPaper(x, px, BASE - h, w, h); rect(x, px, BASE - h, w, h, 1, 0.35);
       for (let sy = BASE - h + 12; sy < BASE; sy += 14) g(x, [px, sy, px + w, sy], 0.8, 0.3);
       for (let k = 0; k < 4; k++) rect(x, px + 4 + r() * (w - 18), BASE - h + 2 + Math.floor(r() * 3) * 14, 10, 10, 0.7, 0.3);
     }
@@ -54,7 +55,7 @@
     /* roller doors */
     for (let px = 150; px < W - 120; px += 380 + r() * 200) {
       const w = 96, h = 86, by = BASE - h;
-      rect(x, px, by, w, h, 1.6, 0.95);
+      A.fillPaper(x, px, by, w, h); rect(x, px, by, w, h, 1.6, 0.95);
       for (let sy = by + 5; sy < BASE; sy += 6) g(x, [px + 2, sy, px + w - 2, sy], 0.8, 0.5);
       A.hatch(x, px + w - 22, by, 22, h, 3, -0.9, 0.2);
       g(x, [px - 3, by - 3, px + w + 3, by - 3], 2, 0.9);
@@ -73,7 +74,7 @@
       for (const sx of [px, px + w]) g(x, [sx, BASE, sx, by], 1.4, 0.95);
       for (let sy = by; sy <= BASE; sy += 24) g(x, [px, sy, px + w, sy], 1.3, 0.9);
       for (let sy = by + 24; sy <= BASE; sy += 24) for (let cx = px + 4; cx < px + w - 16; cx += 22 + r() * 10) if (r() < 0.8) {
-        const s = 14 + r() * 6; rect(x, cx, sy - s, s, s, 1, 0.85); g(x, [cx, sy - s, cx + s, sy, cx + s, sy - s, cx, sy], 0.7, 0.4);
+        const s = 14 + r() * 6; A.fillPaper(x, cx, sy - s, s, s); rect(x, cx, sy - s, s, s, 1, 0.85); g(x, [cx, sy - s, cx + s, sy, cx + s, sy - s, cx, sy], 0.7, 0.4);
       }
     }
     /* hanging lamps */
@@ -85,13 +86,15 @@
     floorLines(x, W, r, { hz: 0.3 });
     for (let sx = 0; sx < W; sx += 26) g(x, [sx, BASE + 1, sx + 10, BASE + 7], 2.4, 0.5);
     for (let sx = 20; sx < W; sx += 64) g(x, [sx, 214, sx + 30, 214], 2.2, 0.5, '#8a6d12');
+    A.groundShade(x, W);
     return { far: L.far, near: L.near, f };
   };
 
   /* ---------- dojo ---------- */
   TH.dojo = function (level, f) {
     const L = layers(level, f, 0.5), W = L.W; let x = L.far.getContext('2d'), r = U.rng(31);
-    x.scale(f, f);
+    x.scale(f, f); A._f = f;
+    A.fillPaper(x, 0, 0, L.far.width / f, C.H); A.skyWash(x, L.far.width / f, 'rgba(225,165,120,0.26)');
     const FW = W * 0.5 + C.W;
     x.strokeStyle = INK; x.globalAlpha = 0.4; x.lineWidth = 1.5; x.beginPath(); x.arc(FW * 0.35, 70, 34, 0, 6.3); x.stroke(); x.globalAlpha = 1;
     A.hatch(x, FW * 0.35 - 34, 36, 68, 68, 4, 0.8, 0.05);
@@ -116,9 +119,16 @@
       const sw = 100;
       for (let col = 0; col < 2; col++) {
         const cx = px + col * 50, y0 = 38, h = BASE - 44;
-        const open = ((cx / 50) * 7 + 3) % 5 === 0;
-        if (!open) A.fillPaper(x, cx + 3, y0, 44, h);
+        const art = ((cx / 50) * 7 + 3) % 5 === 0;
+        A.fillPaper(x, cx + 3, y0, 44, h);
         rect(x, cx + 3, y0, 44, h, 1, 0.7);
+        if (art) {                                                                     /* a framed ink painting instead of a blank screen */
+          A.fillPaper(x, cx + 7, y0 + 6, 36, h - 12);
+          rect(x, cx + 7, y0 + 6, 36, h - 12, 1.2, 0.8);
+          g(x, [cx + 9, y0 + h * 0.62, cx + 19, y0 + h * 0.4, cx + 27, y0 + h * 0.56, cx + 34, y0 + h * 0.44, cx + 41, y0 + h * 0.6], 1.3, 0.7);
+          x.strokeStyle = INK; x.globalAlpha = 0.6; x.lineWidth = 1.3; x.beginPath(); x.arc(cx + 33, y0 + h * 0.24, 5, 0, 6.3); x.stroke(); x.globalAlpha = 1;
+          A.hatch(x, cx + 9, y0 + h * 0.62, 32, h * 0.26, 3, 0.8, 0.12);
+        }
         for (let k = 1; k < 4; k++) g(x, [cx + 3, y0 + (h / 4) * k, cx + 47, y0 + (h / 4) * k], 0.7, 0.5);
         g(x, [cx + 25, y0, cx + 25, y0 + h], 0.7, 0.5);
         if (r() < 0.12) { g(x, [cx + 8, y0 + 12, cx + 30, y0 + 30, cx + 18, y0 + 36], 1.2, 0.6); }          /* torn paper scribble */
@@ -130,7 +140,7 @@
     for (let px = 70; px < W - 60; px += 210 + r() * 120) {
       const k = r();
       if (k < 0.4) {
-        rect(x, px, 44, 26, 74, 1.4, 0.95); A.hatch(x, px, 44, 26, 74, 8, 0.9, 0.06);
+        A.fillPaper(x, px, 44, 26, 74); rect(x, px, 44, 26, 74, 1.4, 0.95); A.hatch(x, px, 44, 26, 74, 8, 0.9, 0.06);
         g(x, [px + 7, 58, px + 13, 70, px + 8, 84, px + 17, 96, px + 11, 108], 2.4, 0.7);
         g(x, [px - 3, 44, px + 29, 44], 2.2, 0.95);
       } else if (k < 0.7) {
@@ -149,13 +159,15 @@
       x.save(); x.translate(px, 232); x.strokeStyle = INK; x.globalAlpha = 0.4; x.lineWidth = 1.3;
       x.strokeRect(0, 0, 64, 26); x.strokeRect(5, 4, 54, 18); x.restore();
     }
+    A.groundShade(x, W);
     return { far: L.far, near: L.near, f };
   };
 
   /* ---------- docks ---------- */
   TH.docks = function (level, f) {
     const L = layers(level, f, 0.5), W = L.W; let x = L.far.getContext('2d'), r = U.rng(41);
-    x.scale(f, f);
+    x.scale(f, f); A._f = f;
+    A.fillPaper(x, 0, 0, L.far.width / f, C.H); A.skyWash(x, L.far.width / f, 'rgba(95,125,175,0.28)'); A.wash(x, 0, 118, L.far.width / f, 52, 'rgba(95,125,175,0.2)', 'rgba(95,125,175,0.05)');
     const FW = W * 0.5 + C.W;
     x.strokeStyle = INK; x.globalAlpha = 0.45; x.lineWidth = 1.4; x.beginPath(); x.arc(FW * 0.7, 52, 22, 0, 6.3); x.stroke(); x.globalAlpha = 1;
     g(x, [0, 118, FW, 118], 1.4, 0.5);
@@ -186,26 +198,29 @@
       const k = r();
       if (k < 0.4) { g(x, [px - 5, BASE + 14, px - 4, BASE, px + 4, BASE, px + 5, BASE + 14], 1.4, 0.95); g(x, [px - 7, BASE, px + 7, BASE], 1.8, 0.95); A.hatch(x, px - 4, BASE, 8, 14, 2, 0.8, 0.4); }
       else if (k < 0.7) { g(x, [px, BASE + 16, px, BASE - 70, px + 14, BASE - 76], 1.7, 0.95); g(x, [px + 10, BASE - 77, px + 22, BASE - 77, px + 20, BASE - 72, px + 12, BASE - 72, px + 10, BASE - 77], 1.2, 0.9); }
-      else { rect(x, px, BASE - 14, 24, 28, 1.4, 0.95); g(x, [px, BASE - 6, px + 24, BASE - 6], 1, 0.7); g(x, [px, BASE + 4, px + 24, BASE + 4], 1, 0.7); A.hatch(x, px + 14, BASE - 14, 10, 28, 2.5, -0.8, 0.25); }
+      else { A.contact(x, px + 12, BASE + 14, 17); A.fillPaper(x, px, BASE - 14, 24, 28); rect(x, px, BASE - 14, 24, 28, 1.4, 0.95); g(x, [px, BASE - 6, px + 24, BASE - 6], 1, 0.7); g(x, [px, BASE + 4, px + 24, BASE + 4], 1, 0.7); A.hatch(x, px + 14, BASE - 14, 10, 28, 2.5, -0.8, 0.25); }
     }
     /* plank pier floor */
     g(x, [0, BASE + 14, W, BASE + 14], 2.2, 1);
     for (let y = BASE + 24; y < C.H; y += 12) { g(x, [0, y, W, y], 1, 0.4); for (let px = (y * 11) % 60; px < W; px += 52 + (y % 7) * 6) { g(x, [px, y - 12, px, y], 0.8, 0.3); g(x, [px + 3, y - 8, px + 6, y - 8], 0.7, 0.3); } }
     A.hatch(x, 0, BASE + 14, W, 10, 3, 0.8, 0.14);
     for (let i = 0; i < W / 140; i++) { const cx = 40 + r() * (W - 80), cy = 200 + r() * 50; x.save(); x.translate(cx, cy); x.scale(1, 0.3); x.strokeStyle = INK; x.globalAlpha = 0.4; x.lineWidth = 1.2; x.beginPath(); x.arc(0, 0, 10, 0, 6.3); x.stroke(); x.restore(); }
+    A.groundShade(x, W);
     return { far: L.far, near: L.near, f };
   };
 
   /* ---------- rooftop ---------- */
   TH.roof = function (level, f) {
     const L = layers(level, f, 0.45), W = L.W; let x = L.far.getContext('2d'), r = U.rng(51);
-    x.scale(f, f);
+    x.scale(f, f); A._f = f;
+    A.fillPaper(x, 0, 0, L.far.width / f, C.H); A.skyWash(x, L.far.width / f, 'rgba(105,135,185,0.28)');
     const FW = W * 0.45 + C.W;
     for (let i = 0; i < FW / 120; i++) {                                                    /* clouds */
       const cx = r() * FW, cy = 18 + r() * 60; x.strokeStyle = INK; x.globalAlpha = 0.25; x.lineWidth = 1.2; x.beginPath(); x.arc(cx, cy, 11, 3.1, 0.4); x.arc(cx + 14, cy - 4, 14, 3.4, 0.2); x.arc(cx + 30, cy, 10, 3.6, 0.1); x.stroke(); x.globalAlpha = 1;
     }
     for (let px = -10, layer = 0; px < FW; layer++) {
       const w = 50 + r() * 60, h = 70 + r() * 90, by = BASE - 10 - h;
+      A.fillPaper(x, px, by, w, BASE - 10 - by);
       g(x, [px, BASE - 10, px, by, px + w, by, px + w, BASE - 10], 1.2, 0.42);
       A.hatch(x, px, by, w, h, 5, 0.9, 0.07);
       for (let wy = by + 8; wy < BASE - 16; wy += 12) for (let wx = px + 6; wx < px + w - 8; wx += 10) if (r() < 0.6) g(x, [wx, wy, wx + 4, wy, wx + 4, wy + 6, wx, wy + 6, wx, wy], 0.7, 0.3);
@@ -245,6 +260,7 @@
     for (let sx = 40; sx < W; sx += 130) g(x, [sx, BASE + 10, sx + 6, C.H], 0.9, 0.25);
     for (let sy = 200; sy < C.H; sy += 36) g(x, [0, sy, W, sy], 0.8, 0.2);
     for (let i = 0; i < W / 160; i++) { const cx = 40 + r() * (W - 80), cy = 205 + r() * 45; x.save(); x.translate(cx, cy); x.scale(1, 0.3); x.strokeStyle = INK; x.globalAlpha = 0.4; x.lineWidth = 1.2; x.beginPath(); x.arc(0, 0, 14, 0, 6.3); x.stroke(); x.beginPath(); x.arc(0, 0, 8, 0, 6.3); x.stroke(); x.restore(); }
+    A.groundShade(x, W);
     return { far: L.far, near: L.near, f };
   };
 

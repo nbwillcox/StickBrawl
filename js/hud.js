@@ -12,7 +12,12 @@
   }
   H.label = label;
 
+  function plate(ctx, x, y, w, h) {
+    ctx.save(); ctx.fillStyle = 'rgba(241,233,212,0.8)'; ctx.strokeStyle = 'rgba(43,42,39,0.5)'; ctx.lineWidth = 1.1; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.moveTo(x + 4, y); ctx.lineTo(x + w - 4, y); ctx.quadraticCurveTo(x + w, y, x + w, y + 4); ctx.lineTo(x + w, y + h - 4); ctx.quadraticCurveTo(x + w, y + h, x + w - 4, y + h); ctx.lineTo(x + 4, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - 4); ctx.lineTo(x, y + 4); ctx.quadraticCurveTo(x, y, x + 4, y); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+  }
   function enemyBar(ctx, name, ratio, x, y, w) {
+    plate(ctx, x - w - 6, y - 17, w + 10, 27);
     label(ctx, name, x, y - 7, 8, C.RED_D, 'right');
     ctx.fillStyle = 'rgba(40,36,30,0.14)'; ctx.fillRect(x - w, y, w, 6);
     ctx.fillStyle = C.RED; ctx.fillRect(x - w, y, w * U.clamp(ratio, 0, 1), 6);
@@ -23,6 +28,8 @@
   H.draw = function (ctx, g) {
     const p = g.player;
     if (!p) return;
+    /* small pencil plates so the HUD stays readable over any backdrop */
+    plate(ctx, 3, 3, 224, 40); plate(ctx, C.W / 2 - 56, 3, 112, 17); plate(ctx, C.W - 98, 3, 95, 21);
     /* hearts */
     const hearts = Math.round(p.maxhp / C.HEART), hurt = g.hudHurt > 0 && Math.floor(g.hudHurt * 20) % 2 === 0;
     for (let i = 0; i < hearts; i++) ART.heart(ctx, 14 + i * 15, 14, hurt ? 1.18 : 1, U.clamp((p.hp - i * C.HEART) / C.HEART, 0, 1), C.RED);
@@ -42,7 +49,7 @@
     label(ctx, String(tl), C.W - 14, 12, 12, low && Math.floor(g.timeLeft * 3) % 2 === 0 ? C.RED : C.INK, 'right');
     /* enemy bar: boss when one is out, else whoever was hit last */
     const be = g.bossBar && g.bossBar.hp > 0 ? g.bossBar : (g.lastHitE && g.lastHitT > 0 && g.lastHitE.hp > 0 ? g.lastHitE : null);
-    if (be) enemyBar(ctx, be.def.name, be.hp / be.maxhp, C.W - 14, 30, be.def.boss ? 110 : 70);
+    if (be) enemyBar(ctx, be.def.name, be.hp / be.maxhp, C.W - 10, 42, be.def.boss ? 110 : 70);
 
     if (p.state === 'grabbed') label(ctx, 'MASH BUTTONS!', p.x - g.camX, p.y - 62, 10, C.RED, 'center');
     /* GO arrow */
