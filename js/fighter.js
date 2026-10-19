@@ -31,6 +31,8 @@
     p3s: P({ lean: 26, aF: [104, 2], aB: [-40, 70], lF: [50, 36], lB: [-40, 8] }),
     kickw: P({ lean: -6, aF: [56, 64], aB: [-24, 64], lF: [58, 104], lB: [-12, 14] }),
     kicks: P({ lean: -16, aF: [60, 50], aB: [-46, 60], lF: [88, 2], lB: [-12, 14] }),
+    k2w: P({ lean: -2, aF: [50, 70], aB: [-10, 70], lF: [16, 20], lB: [40, 104] }),
+    k2s: P({ lean: -12, aF: [58, 50], aB: [-40, 60], lF: [14, 20], lB: [86, 2] }),
     batI: P({ lean: 8, aF: [30, 128], aB: [22, 106], lF: [16, 20], lB: [-20, 16], wRot: 8 }),
     batw: P({ lean: -10, aF: [150, 30], aB: [128, 34], lF: [12, 24], lB: [-26, 18], wRot: 40 }),
     bats: P({ lean: 24, aF: [72, 14], aB: [60, 40], lF: [44, 30], lB: [-34, 10], wRot: 6 }),
@@ -73,7 +75,10 @@
     punch1: { s: 0.04, a: 0.07, r: 0.11, dmg: 2, stun: 0.3, reach: 25, pw: 'p1w', ps: 'p1s', lunge: 38, next: 'punch2', snd: 'punch', hs: 0.04, sh: 1.2 },
     punch2: { s: 0.04, a: 0.07, r: 0.11, dmg: 2, stun: 0.3, reach: 25, pw: 'p2w', ps: 'p2s', lunge: 38, next: 'punch3', snd: 'punch', hs: 0.04, sh: 1.2 },
     punch3: { s: 0.06, a: 0.08, r: 0.22, dmg: 3, kd: true, kdv: 78, reach: 29, pw: 'p3w', ps: 'p3s', lunge: 64, snd: 'punchH', hs: 0.085, sh: 3.5 },
-    kick: { s: 0.07, a: 0.1, r: 0.22, dmg: 4, kd: true, kdv: 90, reach: 33, pw: 'kickw', ps: 'kicks', lunge: 28, snd: 'kick', hs: 0.085, sh: 3.5 },
+    kick1: { s: 0.06, a: 0.08, r: 0.14, dmg: 3, stun: 0.3, reach: 31, pw: 'kickw', ps: 'kicks', lunge: 26, next: 'kick2', nextBtn: 'kick', snd: 'kick', hs: 0.05, sh: 1.6 },
+    kick2: { s: 0.05, a: 0.08, r: 0.14, dmg: 3, stun: 0.3, reach: 31, pw: 'k2w', ps: 'k2s', lunge: 26, next: 'kick3', nextBtn: 'kick', snd: 'kick', hs: 0.05, sh: 1.6 },
+    kick3: { s: 0.05, a: 0.08, r: 0.14, dmg: 3, stun: 0.3, reach: 31, pw: 'kickw', ps: 'kicks', lunge: 26, next: 'kick', nextBtn: 'kick', snd: 'kick', hs: 0.05, sh: 1.6 },
+    kick: { s: 0.07, a: 0.1, r: 0.22, dmg: 5, kd: true, kdv: 90, reach: 33, pw: 'kickw', ps: 'kicks', lunge: 28, snd: 'kick', hs: 0.085, sh: 3.5 },
     bat: { s: 0.10, a: 0.11, r: 0.28, dmg: 7, kd: true, kdv: 105, reach: 41, pw: 'batw', ps: 'bats', lunge: 34, snd: 'bat', swing: 'swing', wep: 'bat', hs: 0.11, sh: 5 },
     nun1: { s: 0.05, a: 0.07, r: 0.12, dmg: 3, stun: 0.32, reach: 33, pw: 'nu1w', ps: 'nu1s', lunge: 22, next: 'nun2', snd: 'punch', swing: 'whoosh', wep: 'nunchaku', hs: 0.05, sh: 1.6 },
     nun2: { s: 0.04, a: 0.08, r: 0.16, dmg: 3, kd: true, kdv: 70, reach: 35, pw: 'nu2w', ps: 'nu2s', lunge: 30, snd: 'punchH', swing: 'whoosh', wep: 'nunchaku', hs: 0.07, sh: 2.4 },
@@ -288,7 +293,7 @@
       }
       if (I.kick) {
         I.use('kick');
-        if (this.weapon) this.startMove('throwW'); else this.startMove('kick');
+        if (this.weapon) this.startMove('throwW'); else this.startMove('kick1');
         return;
       }
       let dx = I.dx, dy = I.dy;
@@ -339,13 +344,14 @@
       }
       /* chain into the next hit */
       const rec = mv.s + mv.a;
-      if (mv.next && t >= rec + mv.r * 0.05 && (I.punch) && (this.connected || this.team !== 'p')) {
-        I.use('punch'); this.swung = false; this.startMove(mv.next); return;
+      const nb = mv.nextBtn || 'punch';
+      if (mv.next && t >= rec + mv.r * 0.05 && I[nb] && (this.connected || this.team !== 'p')) {
+        I.use(nb); this.swung = false; this.startMove(mv.next); return;
       }
       /* player cancels: jump out of any recovery, kick out of a punch that landed, walk away from the tail end */
       if (this.team === 'p' && t >= rec) {
         if (I.jump && this.def.canJump !== false) { this.swung = false; this.startJump(); return; }
-        if (I.kick && this.connected && !mv.wep && mv.pw.charAt(0) === 'p' && t >= rec + mv.r * 0.1) { I.use('kick'); this.swung = false; this.startMove('kick'); return; }
+        if (I.kick && this.connected && !mv.wep && mv.pw.charAt(0) === 'p' && t >= rec + mv.r * 0.1) { I.use('kick'); this.swung = false; this.startMove('kick1'); return; }
         if ((I.dx || I.dy) && t >= rec + mv.r * 0.55) { this.swung = false; this.to('idle'); return; }
       }
       if (t >= mv.s + mv.a + mv.r) { this.swung = false; this.to('idle'); }

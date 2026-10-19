@@ -10,7 +10,7 @@ A free, original pencil-sketch beat 'em up in the spirit of the 80s arcade stree
 | --- | --- |
 | Move (and walk "up" and "down" the street) | `←` `→` `↑` `↓` |
 | Punch (3-hit combo, the third knocks down) | `Z` |
-| Kick | `X` |
+| Kick (3 light kicks, then a heavy kick that knocks down) | `X` |
 | Jump | `Space` |
 | Jump kick / spin kick | in the air: kick = jump kick, punch = spin kick (hits both sides) |
 | Grab | walk into a standing or stunned enemy |
