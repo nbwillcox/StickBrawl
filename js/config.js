@@ -5,6 +5,7 @@
     W: 480, H: 270,
     YMIN: 176, YMAX: 254,                 /* the walkable depth band (screen y of the feet) */
     GRAV: 560,
+    ATK_SPEED: 1.2,                       /* player attack speed multiplier (1 = the move table as written) */
     START_LIVES: 3,
     PLAYER_HP: 24,                        /* 6 hearts x 4 */
     HEART: 4,

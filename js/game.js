@@ -99,7 +99,7 @@
     if (heavy) FX.debris(hx, v.y, hz, dirAway, 4, C.INK);
     const snd = (over && over.snd) || mv.snd;
     if (snd && A.sfx[snd]) A.sfx[snd]();
-    FX.freeze(mv.hs || 0.04); FX.addShake(mv.sh || 1);
+    FX.freeze((mv.hs || 0.04) * (att.team === 'p' ? 0.8 : 1)); FX.addShake(mv.sh || 1);
     att.connected = true;
     if (att.team === 'p') { Game.addScore(dmg * 10); Game.lastHitE = v; Game.lastHitT = 3; }
     else if (v.team === 'p') { Game.hudHurt = 0.4; }

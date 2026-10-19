@@ -68,15 +68,15 @@
 
   /* ---------- moves ---------- */
   const MOVES = {
-    punch1: { s: 0.05, a: 0.07, r: 0.14, dmg: 2, stun: 0.3, reach: 25, pw: 'p1w', ps: 'p1s', lunge: 38, next: 'punch2', snd: 'punch', hs: 0.04, sh: 1.2 },
-    punch2: { s: 0.05, a: 0.07, r: 0.15, dmg: 2, stun: 0.3, reach: 25, pw: 'p2w', ps: 'p2s', lunge: 38, next: 'punch3', snd: 'punch', hs: 0.04, sh: 1.2 },
-    punch3: { s: 0.08, a: 0.08, r: 0.3, dmg: 3, kd: true, kdv: 78, reach: 29, pw: 'p3w', ps: 'p3s', lunge: 64, snd: 'punchH', hs: 0.085, sh: 3.5 },
-    kick: { s: 0.1, a: 0.1, r: 0.3, dmg: 4, kd: true, kdv: 90, reach: 33, pw: 'kickw', ps: 'kicks', lunge: 28, snd: 'kick', hs: 0.085, sh: 3.5 },
-    bat: { s: 0.14, a: 0.11, r: 0.36, dmg: 7, kd: true, kdv: 105, reach: 41, pw: 'batw', ps: 'bats', lunge: 34, snd: 'bat', swing: 'swing', wep: 'bat', hs: 0.11, sh: 5 },
+    punch1: { s: 0.04, a: 0.07, r: 0.11, dmg: 2, stun: 0.3, reach: 25, pw: 'p1w', ps: 'p1s', lunge: 38, next: 'punch2', snd: 'punch', hs: 0.04, sh: 1.2 },
+    punch2: { s: 0.04, a: 0.07, r: 0.11, dmg: 2, stun: 0.3, reach: 25, pw: 'p2w', ps: 'p2s', lunge: 38, next: 'punch3', snd: 'punch', hs: 0.04, sh: 1.2 },
+    punch3: { s: 0.06, a: 0.08, r: 0.22, dmg: 3, kd: true, kdv: 78, reach: 29, pw: 'p3w', ps: 'p3s', lunge: 64, snd: 'punchH', hs: 0.085, sh: 3.5 },
+    kick: { s: 0.07, a: 0.1, r: 0.22, dmg: 4, kd: true, kdv: 90, reach: 33, pw: 'kickw', ps: 'kicks', lunge: 28, snd: 'kick', hs: 0.085, sh: 3.5 },
+    bat: { s: 0.10, a: 0.11, r: 0.28, dmg: 7, kd: true, kdv: 105, reach: 41, pw: 'batw', ps: 'bats', lunge: 34, snd: 'bat', swing: 'swing', wep: 'bat', hs: 0.11, sh: 5 },
     nun1: { s: 0.05, a: 0.07, r: 0.12, dmg: 3, stun: 0.32, reach: 33, pw: 'nu1w', ps: 'nu1s', lunge: 22, next: 'nun2', snd: 'punch', swing: 'whoosh', wep: 'nunchaku', hs: 0.05, sh: 1.6 },
-    nun2: { s: 0.05, a: 0.08, r: 0.22, dmg: 3, kd: true, kdv: 70, reach: 35, pw: 'nu2w', ps: 'nu2s', lunge: 30, snd: 'punchH', swing: 'whoosh', wep: 'nunchaku', hs: 0.07, sh: 2.4 },
-    knife: { s: 0.07, a: 0.07, r: 0.17, dmg: 5, stun: 0.4, reach: 26, pw: 'knw', ps: 'kns', lunge: 30, snd: 'stab', swing: 'whoosh', wep: 'knife', hs: 0.06, sh: 1.8 },
-    throwW: { s: 0.09, a: 0.02, r: 0.22, dmg: 0, reach: 0, pw: 'p3w', ps: 'p3s', lunge: 0, special: 'throwW' },
+    nun2: { s: 0.04, a: 0.08, r: 0.16, dmg: 3, kd: true, kdv: 70, reach: 35, pw: 'nu2w', ps: 'nu2s', lunge: 30, snd: 'punchH', swing: 'whoosh', wep: 'nunchaku', hs: 0.07, sh: 2.4 },
+    knife: { s: 0.05, a: 0.07, r: 0.13, dmg: 5, stun: 0.4, reach: 26, pw: 'knw', ps: 'kns', lunge: 30, snd: 'stab', swing: 'whoosh', wep: 'knife', hs: 0.06, sh: 1.8 },
+    throwW: { s: 0.06, a: 0.02, r: 0.16, dmg: 0, reach: 0, pw: 'p3w', ps: 'p3s', lunge: 0, special: 'throwW' },
     /* enemy versions: slower wind-ups so there is something to read */
     e_jab: { s: 0.3, a: 0.08, r: 0.38, dmg: 2, stun: 0.32, reach: 25, pw: 'p1w', ps: 'p1s', lunge: 34, snd: 'punch', hs: 0.04, sh: 1.2 },
     e_kick: { s: 0.36, a: 0.1, r: 0.44, dmg: 3, kd: true, kdv: 80, reach: 33, pw: 'kickw', ps: 'kicks', lunge: 24, snd: 'kick', hs: 0.07, sh: 3 },
@@ -224,7 +224,7 @@
         case 'idle': case 'walk': this.groundUpdate(dt, g, I); break;
         case 'atk': this.atkUpdate(dt, g, I); break;
         case 'jump': this.jumpUpdate(dt, g, I); break;
-        case 'land': this.t >= this.landRec && this.to('idle'); this.vx *= 0.8; break;
+        case 'land': if (this.t >= this.landRec || (this.team === 'p' && (I.punch || I.kick || I.jump))) this.to('idle'); this.vx *= 0.8; break;
         case 'hurt': {
           this.x += this.vx * dt; this.vx *= Math.pow(0.02, dt);
           if (this.t >= this.stun) this.to('idle');
@@ -236,7 +236,7 @@
           if (this.t >= this.lieT) { this.to('getup'); this.inv = 0.7; }
           break;
         }
-        case 'getup': if (this.t >= 0.32) this.to('idle'); break;
+        case 'getup': if (this.t >= (this.team === 'p' ? 0.24 : 0.32)) this.to('idle'); break;
         case 'dead': this.deadT += dt; break;
         case 'grab': this.grabUpdate(dt, g, I); break;
         case 'grabbed': {
@@ -306,6 +306,7 @@
       const mv = this.move;
       if (!mv) { this.to('idle'); return; }
       this.x += this.vx * dt; this.vx *= Math.pow(0.004, dt);
+      if (this.team === 'p') this.t += dt * (C.ATK_SPEED - 1);          /* the player's attacks run a little faster than the table says */
       const t = this.t;
       if (this.thrownDone) { if (t >= 0.3) { this.thrownDone = false; this.to('idle'); } return; }
       if (mv.special === 'throwW') {
@@ -318,9 +319,15 @@
         g.hitCheck(this, mv);
       }
       /* chain into the next hit */
-      if (mv.next && t >= mv.s + mv.a + mv.r * 0.2 && (I.punch) && (this.connected || this.team !== 'p')) {
-        if (this.weapon && mv.wep && !this.weapon) { /* ignore */ }
+      const rec = mv.s + mv.a;
+      if (mv.next && t >= rec + mv.r * 0.05 && (I.punch) && (this.connected || this.team !== 'p')) {
         I.use('punch'); this.swung = false; this.startMove(mv.next); return;
+      }
+      /* player cancels: jump out of any recovery, kick out of a punch that landed, walk away from the tail end */
+      if (this.team === 'p' && t >= rec) {
+        if (I.jump && this.def.canJump !== false) { this.swung = false; this.startJump(); return; }
+        if (I.kick && this.connected && !mv.wep && mv.pw.charAt(0) === 'p' && t >= rec + mv.r * 0.1) { I.use('kick'); this.swung = false; this.startMove('kick'); return; }
+        if ((I.dx || I.dy) && t >= rec + mv.r * 0.55) { this.swung = false; this.to('idle'); return; }
       }
       if (t >= mv.s + mv.a + mv.r) { this.swung = false; this.to('idle'); }
     }
@@ -336,7 +343,7 @@
       if (this.z <= 0 && this.vz <= 0) {
         this.z = 0; this.vz = 0;
         FX.dust(this.x, this.y, 4); A.sfx.land();
-        if (this.air) { this.air = null; this.landRec = 0.1; this.to('land'); } else { this.landRec = 0.04; this.to('land'); }
+        if (this.air) { this.air = null; this.landRec = 0.05; this.to('land'); } else { this.landRec = 0.02; this.to('land'); }
         this.vx = 0; this.vy = 0;
       }
     }
@@ -349,7 +356,7 @@
         if (this.vz < -90 && !this.bounced && !this.dying) { this.bounced = true; this.vz = -this.vz * 0.28; this.vx *= 0.55; FX.dust(this.x, this.y, 5, true); A.sfx.thud(); FX.addShake(2.5); return; }
         this.bounced = false; this.vz = 0; this.vx = 0; this.thrownBy = null;
         FX.dust(this.x, this.y, 6, true); if (!(this.bounced)) { A.sfx.thud(); FX.addShake(this.dying ? 3.5 : 2.5); }
-        this.lieT = this.dying ? 0.6 : (this.team === 'p' ? 0.55 : 0.8 + Math.random() * 0.35);
+        this.lieT = this.dying ? 0.6 : (this.team === 'p' ? 0.42 : 0.8 + Math.random() * 0.35);
         this.to('lie');
       }
     }
