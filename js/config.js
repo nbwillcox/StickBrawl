@@ -17,16 +17,18 @@
   };
 
   const KEY = 'stickbrawl.settings.v1';
-  const defaults = { master: 0.8, music: 0.6, sfx: 0.9, shake: true, hitstop: true };
+  C.KEYS = { left: 'ArrowLeft', right: 'ArrowRight', up: 'ArrowUp', down: 'ArrowDown', punch: 'KeyZ', kick: 'KeyX', jump: 'Space', pause: 'KeyP' };
+  const defaults = { master: 0.8, music: 0.6, sfx: 0.9, shake: true, hitstop: true, keys: Object.assign({}, C.KEYS) };
   const S = Object.assign({}, defaults);
   try {
     const raw = localStorage.getItem(KEY);
     if (raw) Object.assign(S, JSON.parse(raw));
   } catch (e) { /* storage unavailable */ }
+  S.keys = Object.assign({}, C.KEYS, S.keys || {});
   S.save = function () {
     try {
       const o = {};
-      for (const k in defaults) o[k] = S[k];
+      for (const k in defaults) o[k] = k === 'keys' ? Object.assign({}, S.keys) : S[k];
       localStorage.setItem(KEY, JSON.stringify(o));
     } catch (e) { /* ignore */ }
   };

@@ -4,7 +4,44 @@
   const S = G.settings, A = G.audio, U = G.U;
   const $ = (id) => document.getElementById(id);
   const UI = { cur: 'title', back: 'title', lastIdx: -1 };
-  const NAMES = ['title', 'pause', 'settings', 'scores', 'gameover'];
+  const NAMES = ['title', 'pause', 'settings', 'controls', 'scores', 'gameover'];
+  const ACTIONS = [['left', 'Move left'], ['right', 'Move right'], ['up', 'Move up'], ['down', 'Move down'], ['punch', 'Punch'], ['kick', 'Kick'], ['jump', 'Jump'], ['pause', 'Pause']];
+  const NICE = { ArrowLeft: '←', ArrowRight: '→', ArrowUp: '↑', ArrowDown: '↓', Space: 'SPACE', ShiftLeft: 'L-SHIFT', ShiftRight: 'R-SHIFT', ControlLeft: 'L-CTRL', ControlRight: 'R-CTRL', AltLeft: 'L-ALT', AltRight: 'R-ALT', Enter: 'ENTER', Backspace: 'BACKSPACE' };
+  const RESERVED = { Escape: 1, Tab: 1, MetaLeft: 1, MetaRight: 1, ContextMenu: 1, F5: 1, F11: 1, F12: 1 };
+  UI.keyName = function (c) {
+    if (NICE[c]) return NICE[c];
+    if (/^Key/.test(c)) return c.slice(3);
+    if (/^Digit/.test(c)) return c.slice(5);
+    if (/^Numpad/.test(c)) return 'NUM ' + c.slice(6).toUpperCase();
+    return c.replace(/([a-z])([A-Z])/g, '$1 $2').toUpperCase();
+  };
+  UI.updateHints = function () {
+    const k = S.keys, n = UI.keyName;
+    $('titleHint').innerHTML = '<b>' + n(k.left) + ' ' + n(k.right) + ' ' + n(k.up) + ' ' + n(k.down) + '</b>: move &nbsp; <b>' + n(k.punch) + '</b>: punch &nbsp; <b>' + n(k.kick) + '</b>: kick &nbsp; <b>' + n(k.jump) + '</b>: jump (then punch or kick in the air) &nbsp; walk into a stunned enemy to grab him &nbsp; <b>' + n(k.pause) + '</b> / <b>Esc</b>: pause';
+  };
+  UI.renderKeys = function () {
+    const ul = $('keyList'); ul.innerHTML = '';
+    for (const [a, label] of ACTIONS) {
+      const li = document.createElement('li'), nm = document.createElement('span'), b = document.createElement('button');
+      nm.textContent = label; b.textContent = UI.keyName(S.keys[a]); b.dataset.action = a;
+      b.addEventListener('click', () => UI.listen(a, b));
+      li.append(nm, b); ul.appendChild(li);
+    }
+  };
+  /* click an action, press a key: the key is swapped with whichever action had it so nothing is ever left unbound */
+  UI.listen = function (action, btn) {
+    A.resume(); A.sfx.select();
+    const old = G.input.capture; if (old) G.input.capture = null;
+    for (const b of $('keyList').querySelectorAll('button')) { b.classList.remove('listening', 'clash'); b.textContent = UI.keyName(S.keys[b.dataset.action]); }
+    btn.classList.add('listening'); btn.textContent = 'PRESS A KEY...';
+    G.input.capture = (code) => {
+      G.input.capture = null;
+      if (code === 'Escape') { UI.renderKeys(); return; }
+      if (RESERVED[code]) { UI.renderKeys(); const bb = $('keyList').querySelector('[data-action="' + action + '"]'); bb.classList.add('clash'); bb.textContent = 'NOT ALLOWED'; setTimeout(UI.renderKeys, 900); return; }
+      for (const a in S.keys) if (a !== action && S.keys[a] === code) S.keys[a] = S.keys[action];
+      S.keys[action] = code; S.save(); G.input.rebuild(); UI.renderKeys(); UI.updateHints(); A.sfx.pickup();
+    };
+  };
 
   UI.show = function (name) {
     NAMES.forEach((n) => $(n).classList.toggle('hidden', n !== name));
@@ -12,6 +49,8 @@
     document.body.classList.toggle('menu-open', !!name);
     if (name === 'scores') UI.renderScores();
     if (name === 'settings') UI.loadSettings();
+    if (name === 'controls') UI.renderKeys();
+    if (G.input.capture) G.input.capture = null;
     setTimeout(() => {
       const sec = $(name);
       if (!sec || sec.classList.contains('hidden')) return;
@@ -68,6 +107,7 @@
 
   UI.init = function (M) {
     bindSettings();
+    UI.updateHints();
     const click = (id, fn) => $(id).addEventListener('click', () => { A.resume(); A.sfx.select(); fn(); });
     click('btnStart', () => M.startGame());
     click('btnScores', () => { UI.back = 'title'; UI.show('scores'); });
@@ -76,6 +116,9 @@
     click('btnPauseSettings', () => { UI.back = 'pause'; UI.show('settings'); });
     click('btnQuit', () => M.toTitle());
     click('btnSettingsBack', () => UI.show(UI.back || 'title'));
+    click('btnControls', () => UI.show('controls'));
+    click('btnKeysBack', () => UI.show('settings'));
+    click('btnKeysReset', () => { S.keys = Object.assign({}, G.C.KEYS); S.save(); G.input.rebuild(); UI.renderKeys(); UI.updateHints(); });
     click('btnScoresPlay', () => M.startGame());
     click('btnScoresBack', () => UI.show('title'));
     click('btnRetry', () => M.startGame());

@@ -6,12 +6,12 @@ A free, original pencil-sketch beat 'em up in the spirit of the 80s arcade stree
 
 ## Controls
 
-| Action | Keys |
+| Action | Default key |
 | --- | --- |
-| Move (and walk "up" and "down" the street) | `←` `→` `↑` `↓` or `W` `A` `S` `D` (or a gamepad d-pad / stick) |
-| Punch (3-hit combo, the third knocks down) | `J` or `Z` |
-| Kick | `K` or `X` |
-| Jump | `Space`, `C` or `L` |
+| Move (and walk "up" and "down" the street) | `←` `→` `↑` `↓` |
+| Punch (3-hit combo, the third knocks down) | `Z` |
+| Kick | `X` |
+| Jump | `Space` |
 | Jump kick / spin kick | in the air: kick = jump kick, punch = spin kick (hits both sides) |
 | Grab | walk into a standing or stunned enemy |
 | While holding | punch = knee (3 knees throw him), kick or back + punch = throw |
@@ -19,7 +19,9 @@ A free, original pencil-sketch beat 'em up in the spirit of the 80s arcade stree
 | With a weapon | punch = swing / stab, kick = throw it |
 | Pause | `P` or `Esc` |
 
-Gamepad: A jump, X/Y punch, B kick, Start pause.
+Every key can be changed in **Settings → Controls** (click an action, press the new key; a key already in use is swapped). Esc always pauses.
+
+Gamepad: A jump, X/Y punch, B kick, Start pause (not rebindable yet).
 
 ## Weapons
 

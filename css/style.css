@@ -67,3 +67,11 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--blue); }
   .logo .l2 { font-size: clamp(48px, 14vw, 90px); }
 }
 @media (prefers-reduced-motion: reduce) { button { transition: none; } }
+
+.keylist { list-style: none; margin: 0; padding: 10px 18px; width: min(420px, 92vw); background: rgba(255, 252, 240, 0.8); border: 2px solid var(--ink); border-radius: 8px; }
+.keylist li { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 4px 0; border-bottom: 1px dashed rgba(43, 42, 39, 0.25); font-size: 16px; }
+.keylist li:last-child { border-bottom: 0; }
+.keylist button { min-width: 8.5em; padding: 7px 12px; font-size: 14px; letter-spacing: 0.08em; }
+.keylist button.listening { background: #fff0a8; border-color: var(--red); color: var(--red); }
+.keylist button.clash { background: #ffd6d0; }
+@media (max-height: 640px) { .keylist li { padding: 2px 0; font-size: 14px; } .keylist button { padding: 4px 10px; } }

@@ -1,27 +1,31 @@
-/* Keyboard, gamepad and (through the mobile kit later) touch. Move: arrows / WASD. Punch: J / Z. Kick: K / X. Jump: Space / C / L. Pause: P / Esc. */
+/* Keyboard (rebindable), gamepad and (through the mobile kit later) touch. Defaults: arrows move, Z punch, X kick, Space jump, P or Esc pause. */
 (function (G) {
   'use strict';
   const BUF = 0.16;
   const I = { dx: 0, dy: 0, left: false, right: false, up: false, down: false, buf: { punch: 0, kick: 0, jump: 0 }, held: { punch: false, kick: false, jump: false }, _pause: false, _any: false, pad: false };
-  const MAP = { ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right', ArrowUp: 'up', KeyW: 'up', ArrowDown: 'down', KeyS: 'down' };
-  const ACT = { KeyJ: 'punch', KeyZ: 'punch', KeyK: 'kick', KeyX: 'kick', Space: 'jump', KeyC: 'jump', KeyL: 'jump' };
+  /* one key per action; rebound in Settings > Controls and saved with the other settings */
   const typing = (t) => { const n = t && t.tagName; return n === 'INPUT' || n === 'TEXTAREA' || n === 'SELECT'; };
   const refresh = () => { I.dx = (I.right ? 1 : 0) - (I.left ? 1 : 0); I.dy = (I.down ? 1 : 0) - (I.up ? 1 : 0); };
+  const MOVE = { left: 1, right: 1, up: 1, down: 1 }, BTN = { punch: 1, kick: 1, jump: 1 };
+  let CODE = {};                                         /* key code -> action */
+  I.rebuild = function () { CODE = {}; const k = G.settings.keys; for (const a in k) CODE[k[a]] = a; };
+  I.capture = null;                                      /* while set, the next key press goes here instead of the game (rebinding) */
 
   window.addEventListener('keydown', (e) => {
+    if (I.capture) { e.preventDefault(); e.stopPropagation(); if (!e.repeat) I.capture(e.code); return; }
     if (typing(e.target)) return;
-    const m = MAP[e.code], a = ACT[e.code];
-    if (m) { I[m] = true; refresh(); }
-    else if (a) { if (!e.repeat) I.buf[a] = BUF; I.held[a] = true; }
-    else if ((e.code === 'KeyP' || e.code === 'Escape') && !e.repeat) I._pause = true;
+    const a = CODE[e.code];
+    if (a && MOVE[a]) { I[a] = true; refresh(); }
+    else if (a && BTN[a]) { if (!e.repeat) I.buf[a] = BUF; I.held[a] = true; }
+    else if ((a === 'pause' || e.code === 'Escape') && !e.repeat) I._pause = true;
     else { if (G.debugKey && !e.repeat) G.debugKey(e); return; }
     if (e.target.tagName !== 'BUTTON') e.preventDefault();
     if (!e.repeat) I._any = true;
-  });
+  }, true);
   window.addEventListener('keyup', (e) => {
-    const m = MAP[e.code], a = ACT[e.code];
-    if (m) { I[m] = false; refresh(); }
-    if (a) I.held[a] = false;
+    const a = CODE[e.code];
+    if (a && MOVE[a]) { I[a] = false; refresh(); }
+    if (a && BTN[a]) I.held[a] = false;
   });
   window.addEventListener('blur', () => { I.left = I.right = I.up = I.down = false; I.held.punch = I.held.kick = I.held.jump = false; refresh(); });
 
@@ -54,5 +58,6 @@
       break;
     }
   };
+  I.rebuild();
   G.input = I;
 })((window.SGS = window.SGS || {}));

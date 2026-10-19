@@ -7,7 +7,7 @@
   <title>StickBrawl</title>
   <meta name="description" content="StickBrawl - a free pencil-sketch beat 'em up: punch, kick, spin-kick and grab your way through the streets with bats, nunchaku and knives. Free to play, not for money.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23f1e9d4'/%3E%3Ccircle cx='16' cy='8' r='4' fill='none' stroke='%232f62e8' stroke-width='2.4'/%3E%3Cpath d='M16 12v9M16 15l-7 4M16 15l7-3M16 21l-5 7M16 21l6 6' stroke='%232f62e8' stroke-width='2.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/style.css?v=1">
+  <link rel="stylesheet" href="css/style.css?v=2">
 </head>
 <body>
   <canvas id="game" aria-label="StickBrawl game screen"></canvas>
@@ -21,7 +21,7 @@
         <button id="btnScores">HIGH SCORES</button>
         <button id="btnSettings">SETTINGS</button>
       </div>
-      <p class="hint" id="titleHint"><b>&larr; &rarr; &uarr; &darr;</b> / <b>WASD</b>: move &nbsp; <b>J</b> / <b>Z</b>: punch &nbsp; <b>K</b> / <b>X</b>: kick &nbsp; <b>Space</b>: jump (then punch or kick) &nbsp; walk into a stunned enemy to grab him &nbsp; <b>P</b> / <b>Esc</b>: pause</p>
+      <p class="hint" id="titleHint"></p>
       <footer class="credit">Free to play and share &middot; <a href="https://github.com/nbwillcox/StickBrawl" target="_blank" rel="noopener">github.com/nbwillcox/StickBrawl</a> &middot; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a></footer>
     </section>
 
@@ -43,7 +43,14 @@
         <label class="check"><input id="setShake" type="checkbox"> Screen shake</label>
         <label class="check"><input id="setHitstop" type="checkbox"> Hit-stop (tiny freeze on impact)</label>
       </div>
-      <div class="menu"><button id="btnSettingsBack" class="primary">BACK</button></div>
+      <div class="menu"><button id="btnControls">CONTROLS</button><button id="btnSettingsBack" class="primary">BACK</button></div>
+    </section>
+
+    <section id="controls" class="screen hidden">
+      <h2>CONTROLS</h2>
+      <ul id="keyList" class="keylist"></ul>
+      <p class="hint" id="keyHint">Click an action, then press the key you want. <b>Esc</b> cancels. Esc also always pauses; a gamepad works as well (A jump, X punch, B kick, Start pause).</p>
+      <div class="menu"><button id="btnKeysReset">RESET TO DEFAULTS</button><button id="btnKeysBack" class="primary">BACK</button></div>
     </section>
 
     <section id="scores" class="screen hidden">
@@ -72,19 +79,19 @@
 
   <noscript><p style="padding:2rem">StickBrawl needs JavaScript enabled.</p></noscript>
 
-  <script src="js/util.js?v=1"></script>
-  <script src="js/config.js?v=1"></script>
-  <script src="js/audio.js?v=1"></script>
-  <script src="js/art.js?v=1"></script>
-  <script src="js/fx.js?v=1"></script>
-  <script src="js/input.js?v=1"></script>
-  <script src="js/scores.js?v=1"></script>
-  <script src="js/fighter.js?v=1"></script>
-  <script src="js/enemies.js?v=1"></script>
-  <script src="js/level.js?v=1"></script>
-  <script src="js/game.js?v=1"></script>
-  <script src="js/hud.js?v=1"></script>
-  <script src="js/ui.js?v=1"></script>
-  <script src="js/main.js?v=1"></script>
+  <script src="js/util.js?v=2"></script>
+  <script src="js/config.js?v=2"></script>
+  <script src="js/audio.js?v=2"></script>
+  <script src="js/art.js?v=2"></script>
+  <script src="js/fx.js?v=2"></script>
+  <script src="js/input.js?v=2"></script>
+  <script src="js/scores.js?v=2"></script>
+  <script src="js/fighter.js?v=2"></script>
+  <script src="js/enemies.js?v=2"></script>
+  <script src="js/level.js?v=2"></script>
+  <script src="js/game.js?v=2"></script>
+  <script src="js/hud.js?v=2"></script>
+  <script src="js/ui.js?v=2"></script>
+  <script src="js/main.js?v=2"></script>
 </body>
 </html>
