@@ -36,7 +36,7 @@ Play in landscape. A floating stick on the left walks (up and down walk you alon
 
 Enemies fight like you: a telegraphed opener, then a 2 or 3 hit punch or kick combo that only continues if the hit before it landed, ending in a knockdown. Big bosses skip the light stuff and use heavy attacks that always knock you down. Bosses have their own moves (slam, charge) and get enraged at half health. Regular enemies can grab you from the front: mash the buttons to break free.
 
-Crates can be picked up and thrown (enemies throw them too); oil drums can be smashed and often hide a weapon or food. Weapons wear out after a number of hits. Enemies pick them up too, and drop them when knocked down.
+Crates can be picked up and thrown (enemies throw them too); oil drums can be smashed and often hide a weapon or food. Enemies come in armed (not bosses), so the weapons you use are mostly ones you take off them: knock a weapon out of a fighter's hands and pick it up. Weapons wear out after a number of hits. Enemies pick them up too, and drop them when knocked down.
 
 ## Rules
 

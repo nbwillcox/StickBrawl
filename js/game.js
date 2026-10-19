@@ -23,6 +23,9 @@
     Game.enemies = []; Game.props = []; Game.items = []; Game.projs = []; Game.tokens = new Set(); Game.goT = 0; Game.goBeep = 0;
     Game.introT = 0; Game.bossT = 0; Game.clearT = 0; Game.cleared = false; Game.respawnT = 0; Game.timeLeft = Game.level.time || C.STAGE_TIME; Game.bossBar = null; Game.lastHitE = null; Game.lastHitT = 0;
     FX.reset();
+    Game.scenery = [];
+    for (const w of lv.waves) for (const it of (w.items || [])) if (!F.WEAPON[it.t] || it.t === 'crate') Game.scenery.push(it);
+    Game.scenery.sort((a, b) => a.x - b.x);
     const p = new F.Fighter(Game, F.PLAYER, lv.start.x, lv.start.y);
     p.hp = p.maxhp = C.PLAYER_HP;
     Game.player = p;
@@ -55,7 +58,7 @@
   Game.addItem = function (type, x, y, drop) {
     if (type === 'drum') { Game.props.push({ kind: 'drum', x, y, hp: 4, flash: 0, drop: drop || null, id: Math.random() }); return; }
     if (type === 'apple' || type === 'chicken') Game.items.push({ kind: 'food', type, x, y, z: 0, vz: 0, vx: 0, t: 0 });
-    else Game.items.push({ kind: 'weapon', type, uses: F.WEAPON[type].uses, x, y, z: 120, vz: 0, vx: 0, rot: U.rand(-70, 70), taken: false, t: 0 });
+    else Game.items.push({ kind: 'weapon', type, uses: F.WEAPON[type].uses, x, y, z: 0, vz: 0, vx: 0, rot: U.rand(-70, 70), taken: false, t: 0 });
   };
   Game.nearWeapon = function (f) {
     for (const it of Game.items) if (it.kind === 'weapon' && !it.taken && it.z < 4 && Math.abs(it.x - f.x) < 17 && Math.abs(it.y - f.y) < 9) return it;
@@ -168,7 +171,11 @@
   function startWave(w) {
     Game.waveActive = true; Game.goT = 0;
     Game.queue = (w.enemies || []).map((s) => ({ k: s.k, side: s.side, t: s.d }));
-    for (const it of (w.items || [])) Game.addItem(it.t, it.x, it.y, it.drop);
+    /* the weapons a wave lists are carried in by its enemies (never the bosses), not dropped from the sky */
+    const arms = (w.items || []).filter((it) => F.WEAPON[it.t] && it.t !== 'crate');
+    const pool = Game.queue.filter((q) => !E.DEFS[q.k].boss);
+    for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = pool[i]; pool[i] = pool[j]; pool[j] = t; }
+    for (let i = 0; i < arms.length && i < pool.length; i++) pool[i].w = arms[i].t;
     if (w.mini || w.boss) { A.sfx.warn(); Game.bossT = 0; }
     if (w.boss) { A.music(Game.stage === G.level.list.length - 1 ? 'boss2' : 'boss'); Game.bossT = 0; }
     Game.curWave = w;
@@ -177,6 +184,11 @@
   function spawnEnemy(s) {
     const x = s.side === 'l' ? Game.camX - 22 : Game.camX + C.W + 22, y = U.rand(C.YMIN + 8, C.YMAX - 6);
     const e = E.create(Game, s.k, x, y);
+    if (s.w) e.weapon = { type: s.w, uses: F.WEAPON[s.w].uses };
+    else if (!e.weapon && !e.def.boss && e.def.weapons && Math.random() < e.def.weapons * 0.4) {      /* some come armed on their own */
+      const t = e.def.armType || U.pick(['bat', 'knife', 'nunchaku']);
+      e.weapon = { type: t, uses: F.WEAPON[t].uses };
+    }
     e.face = s.side === 'l' ? 1 : -1;
     Game.enemies.push(e);
     if (e.def.boss) Game.bossBar = e;
@@ -249,6 +261,7 @@
     for (const e of Game.enemies) { E.think(e, Game, dt); e.update(dt, Game); }
     for (let i = Game.enemies.length - 1; i >= 0; i--) { const e = Game.enemies[i]; if (e.state === 'dead' && e.deadT > 0.9) { if (Game.bossBar === e) Game.bossBar = null; E.release(e); Game.enemies.splice(i, 1); } }
     separate(dt);
+    while (Game.scenery.length && Game.scenery[0].x < Game.camX + C.W + 24) { const it = Game.scenery.shift(); if (it.x > Game.camX - 30) Game.addItem(it.t, it.x, it.y, it.drop); }
     updateItems(dt);
     updateProjs(dt);
 
