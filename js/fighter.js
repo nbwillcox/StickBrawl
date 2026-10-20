@@ -116,7 +116,7 @@
 
   const PLAYER = {
     name: 'YOU', team: 'p', speed: 76, hp: C.PLAYER_HP, canGrab: true,
-    look: { col: C.BLUE, core: C.BLUE_D, team: 'p', props: ['hair'], scale: 1, line: 2.6 },
+    look: { col: C.BLUE, core: C.BLUE_D, team: 'p', props: ['hair'], scale: 1, line: 2.6, scarf: '#e8b81f', shoe: '#142f86', wrist: '#e8b81f', outfit: { pants: '#142f86' } },
   };
 
   class Fighter {
@@ -252,7 +252,7 @@
         }
         case 'fall': this.fallUpdate(dt, g); break;
         case 'lie': {
-          if (this.dying) { if (this.t > 0.5) { this.to('dead'); } break; }
+          if (this.dying) { if (this.t > 0.5) { this.to('dead'); FX.stars(this.x, this.y, 10, 4); FX.dust(this.x, this.y, 4, true); } break; }
           if (this.t >= this.lieT) { this.to('getup'); this.inv = 0.7; }
           break;
         }
@@ -347,7 +347,7 @@
         if (mv.drive) this.vx = this.face * mv.drive;
         if (!this.swung) {
           this.swung = true; const s = mv.swing || 'whoosh'; if (A.sfx[s]) A.sfx[s]();
-          if (mv.fx === 'slam') { FX.dust(this.x - 18, this.y, 4, true); FX.dust(this.x + 18, this.y, 4, true); FX.addShake(5); }
+          if (mv.fx === 'slam') { FX.dust(this.x - 18, this.y, 4, true); FX.dust(this.x + 18, this.y, 4, true); FX.addShake(5); FX.ring(this.x, this.y, 8, 56, 0.4); }
         }
         g.hitCheck(this, mv);
       }

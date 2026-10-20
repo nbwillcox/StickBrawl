@@ -29,6 +29,17 @@
   };
   Object.assign(DEFS, more);
 
+  /* clothes, so each type reads at a glance even before you see its head */
+  const BLK = '#1d1c1a', WHT = '#f4f1e6', ORG = '#e86a1f', NAVY = '#25324a', GRY = '#4a4f55';
+  const OUTFITS = {
+    thug: { top: '#2b2a27' }, masked: { top: '#2b2a27', pants: '#2b2a27' }, ninja: { top: BLK, pants: BLK },
+    brute: { pants: GRY }, boss: { top: '#2b2a27', coat: '#2b2a27' },
+    bruiser: { top: ORG }, boxer: { pants: WHT }, foreman: { top: ORG, pants: GRY },
+    karateka: { top: WHT, pants: WHT }, shadow: { top: BLK, pants: BLK }, sensei: { top: WHT, pants: WHT, coat: WHT },
+    sailor: { top: WHT, stripes: NAVY }, skipper: { top: NAVY }, harbor: { top: NAVY, coat: NAVY },
+    agent: { top: BLK, pants: BLK, tie: '#c62a1f' }, bodyguard: { top: BLK, pants: BLK, tie: BLK }, kingpin: { top: BLK, pants: BLK, coat: BLK, tie: '#d9b21f' },
+  };
+
   function weightedPick(list) {
     let tot = 0; for (const a of list) tot += a[1];
     let r = Math.random() * tot;
@@ -47,6 +58,7 @@
     e.hp = e.maxhp = def.hp;
     e.ai = { side: Math.random() < 0.5 ? -1 : 1, tok: false, tokT: 0, cd: U.rand(0.3, 1.3), attacking: false, yoff: U.rand(-16, 16), wantsWeapon: Math.random() < (def.weapons || 0), ringR: 62 + Math.random() * 22, retarget: 0 };
     e.kind = kind;
+    if (OUTFITS[kind]) e.look.outfit = OUTFITS[kind];
     if (def.startKnife && Math.random() < def.startKnife) e.weapon = { type: 'knife', uses: 6 };
     return e;
   }

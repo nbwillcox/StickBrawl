@@ -21,7 +21,7 @@
     const lv = Game.level;
     Game.camX = 0; Game.camMax = 0; Game.waveIdx = 0; Game.waveActive = false; Game.queue = []; Game.waveItems = 0;
     Game.enemies = []; Game.props = []; Game.items = []; Game.projs = []; Game.tokens = new Set(); Game.goT = 0; Game.goBeep = 0;
-    Game.introT = 0; Game.bossT = 0; Game.clearT = 0; Game.cleared = false; Game.respawnT = 0; Game.timeLeft = Game.level.time || C.STAGE_TIME; Game.bossBar = null; Game.lastHitE = null; Game.lastHitT = 0;
+    Game.introT = 0; Game.bossT = 0; Game.combo = { n: 0, t: 0 }; Game.clearT = 0; Game.cleared = false; Game.respawnT = 0; Game.timeLeft = Game.level.time || C.STAGE_TIME; Game.bossBar = null; Game.lastHitE = null; Game.lastHitT = 0;
     FX.reset();
     Game.scenery = [];
     for (const w of lv.waves) for (const it of (w.items || [])) if (!F.WEAPON[it.t] || F.HEAVY[it.t]) Game.scenery.push(it);
@@ -122,12 +122,23 @@
     const dirAway = U.sign(v.x - att.x) || att.face;
     const hx = v.x - dirAway * 3, hz = v.z + (v.state === 'lie' ? 6 : 26);
     FX.spark(hx, v.y + 0.5, hz, heavy ? 1.6 : 0.8);
-    if (heavy) FX.debris(hx, v.y, hz, dirAway, 4, C.INK);
+    if (heavy) { FX.debris(hx, v.y, hz, dirAway, 4, C.INK); FX.speed(hx, v.y + 0.5, hz, dirAway); }
+    /* comic impact words: always on heavy hits, now and then on light ones */
+    {
+      const sn = (over && over.snd) || mv.snd, hurtP = v.team === 'p', col = hurtP ? '#a01c14' : C.INK;
+      let word = null;
+      if (mv.fx === 'slam' || (mv.both && mv.dmg >= 5)) word = 'BOOM!';
+      else if (sn === 'bat') word = 'CRACK!';
+      else if (sn === 'stab') word = 'SHK!';
+      else if (heavy) word = sn === 'kick' ? U.pick(['WHAP!', 'THWACK!']) : U.pick(['POW!', 'WHAM!', 'BAM!']);
+      else if (Math.random() < 0.22) word = U.pick(['pak', 'tok', 'thip', 'bap']);
+      if (word) FX.word(hx, v.y - hz - 18, word, col, heavy ? 11 : 7);
+    }
     const snd = (over && over.snd) || mv.snd;
     if (snd && A.sfx[snd]) A.sfx[snd]();
     FX.freeze((mv.hs || 0.04) * (att.team === 'p' ? 0.8 : 1)); FX.addShake(mv.sh || 1);
     att.connected = true;
-    if (att.team === 'p') { Game.addScore(dmg * 10); Game.lastHitE = v; Game.lastHitT = 3; }
+    if (att.team === 'p') { Game.noteCombo(); Game.addScore(dmg * 10); Game.lastHitE = v; Game.lastHitT = 3; }
     else if (v.team === 'p') { Game.hudHurt = 0.4; }
     if (att.weapon && mv.wep) {
       att.weapon.uses--;
@@ -145,7 +156,10 @@
       }
     }
   };
-  Game.noteKnock = function () { };
+  Game.noteKnock = function (f) { if (f.hp > 0 || f.team === 'p') { FX.ring(f.x, f.y, 6, 26, 0.3); } };
+  /* a chain of hits within 1.4 s is a combo; 3 or more pays a bonus when it ends */
+  Game.combo = { n: 0, t: 0 };
+  Game.noteCombo = function () { const c = Game.combo; c.n = c.t > 0 ? c.n + 1 : 1; c.t = 1.4; c.pop = 0.2; };
   Game.thrownHit = function (f) {
     const by = f.thrownBy;
     for (const o of Game.fighters()) {
@@ -232,6 +246,7 @@
     I.tick(dt);
     FX.update(dt);
     Game.introT += dt; Game.bossT += dt;
+    { const c = Game.combo; if (c.pop > 0) c.pop -= dt; if (c.t > 0) { c.t -= dt; if (c.t <= 0) { if (c.n >= 3) { const b = c.n * 25; Game.addScore(b); FX.text(Game.player.x, Game.player.y - 58, c.n + ' HIT BONUS +' + b, '#2a8a3a', 9); } c.n = 0; } } }
     if (Game.hudHurt > 0) Game.hudHurt -= dt;
     if (Game.lastHitT > 0) Game.lastHitT -= dt;
 
@@ -420,6 +435,17 @@
       ART.figure(ctx, f, cam, pose); f.look = save;
     } else ART.figure(ctx, f, cam, pose);
     ctx.globalAlpha = 1;
+    /* a pencil swoosh while a punch, kick or swing is in flight */
+    if (f.state === 'atk' && f.move && f.move.reach > 14 && !f.move.special) {
+      const mv = f.move, u = (f.t - mv.s + 0.02) / (mv.a + 0.1);
+      if (u > 0 && u < 1.6) {
+        const kind = mv.spin ? 'spin' : mv.wep === 'bat' || mv.pw === 'batw' ? 'bat' : mv.pw && mv.pw.charAt(0) === 'k' && mv.pw !== 'knw' ? 'kick' : 'punch';
+        ART.swish(ctx, f, cam, kind, mv.reach, u);
+      }
+    }
+    if (f.state === 'jump' && f.air === 'spin') ART.swish(ctx, f, cam, 'spin', 28, (f.airT * 2.5) % 1);
+    /* dizzy stars over a fighter who is being juggled by hits */
+    if (f.state === 'hurt' && f.hurtChain >= 2 && f.hp > 0) ART.dizzy(ctx, f.x - cam, f.y - f.z - 52 * (f.look.scale || 1), f.clock);
     /* telegraph: a small exclamation mark above a winding-up enemy */
     if (f.team === 'e' && f.state === 'atk' && f.move && f.t < f.move.s && f.move.s > 0.2 && f.t > 0.04) {
       const sx = f.x - cam, sy = f.y - 52 * (f.look.scale || 1);

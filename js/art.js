@@ -210,10 +210,25 @@
     ctx.globalAlpha = 1;
     const P = look.props || [];
     const has = (k) => P.indexOf(k) >= 0;
-    /* face: a dot for the eye, a brow for the angry ones */
-    ctx.fillStyle = C.INK;
-    if (!has('mask')) { ctx.beginPath(); ctx.arc(hx + 2.5, hy - 0.4, 0.9, 0, 6.3); ctx.fill(); }
-    if (look.team === 'e' && !has('mask')) { ctx.strokeStyle = C.INK; ctx.lineWidth = 0.9; ctx.beginPath(); ctx.moveTo(hx + 0.8, hy - 2.6); ctx.lineTo(hx + 4.2, hy - 1.5); ctx.stroke(); }
+    /* face: eyes and mouth react to what the fighter is doing */
+    const st = f.state, strike = f.move && st === 'atk' && f.t >= f.move.s && f.t < f.move.s + f.move.a + 0.08;
+    const down = st === 'lie' || st === 'dead' || st === 'fall', pain = st === 'hurt' || st === 'grabbed';
+    ctx.fillStyle = C.INK; ctx.strokeStyle = C.INK; ctx.lineWidth = 0.9; ctx.lineCap = 'round';
+    const ex = hx + 2.5, ey = hy - 0.4;
+    if (!has('mask')) {
+      if (down) { ctx.beginPath(); ctx.moveTo(ex - 1.3, ey - 1.3); ctx.lineTo(ex + 1.3, ey + 1.3); ctx.moveTo(ex + 1.3, ey - 1.3); ctx.lineTo(ex - 1.3, ey + 1.3); ctx.stroke(); }
+      else if (pain) { ctx.beginPath(); ctx.moveTo(ex - 1.4, ey - 1.4); ctx.lineTo(ex + 0.9, ey); ctx.lineTo(ex - 1.4, ey + 1.4); ctx.stroke(); }
+      else { ctx.beginPath(); ctx.arc(ex, ey, 0.9, 0, 6.3); ctx.fill(); }
+      if (look.team === 'e' && !down && !pain) { ctx.beginPath(); ctx.moveTo(hx + 0.8, hy - 2.6); ctx.lineTo(hx + 4.2, hy - 1.5); ctx.stroke(); }
+    }
+    {
+      const mx = hx + 2.6, my = hy + 2.7;
+      if (pain || st === 'fall') { ctx.beginPath(); ctx.ellipse(mx, my, 1.1, 1.5, 0, 0, 6.3); ctx.stroke(); }
+      else if (strike) { ctx.beginPath(); ctx.ellipse(mx, my, 1.5, 1.2, 0, 0, 6.3); ctx.fill(); }
+      else if (down) { ctx.beginPath(); ctx.moveTo(mx - 1, my); ctx.lineTo(mx + 1.2, my + 0.3); ctx.stroke(); }
+      else if (look.team === 'p') { ctx.beginPath(); ctx.arc(mx, my - 0.8, 1.5, 0.25, 2.9); ctx.stroke(); }
+      else { ctx.beginPath(); ctx.moveTo(mx - 1.3, my + 0.2); ctx.lineTo(mx + 1.5, my - 0.1); ctx.stroke(); }
+    }
     if (has('hair')) { ctx.strokeStyle = core; ctx.lineWidth = 1.5; ctx.lineCap = 'round'; ctx.beginPath(); for (let i = 0; i < 5; i++) { const a = (-150 + i * 30) * D; ctx.moveTo(hx + Math.cos(a) * 4.6, hy + Math.sin(a) * 4.6); ctx.lineTo(hx + Math.cos(a) * 8.2 - 0.8, hy + Math.sin(a) * 8.2 - 0.4); } ctx.stroke(); }
     if (has('mask')) {
       ctx.save(); ctx.beginPath(); ctx.arc(hx, hy, HEADR + 0.2, 0, 6.3); ctx.clip();
@@ -394,18 +409,38 @@
     for (const seg of [aB.slice(0, 6), lB, [hx, hy, tx, ty], lF, aF.slice(0, 6)]) { ctx.beginPath(); ctx.moveTo(seg[0], seg[1]); for (let i = 2; i < seg.length; i += 2) ctx.lineTo(seg[i], seg[i + 1]); ctx.stroke(); }
     ctx.beginPath(); ctx.arc(hdx, hdy, HEADR + 1.4, 0, 6.3); ctx.stroke();
     ctx.globalAlpha = 1;
-    A.pencil(ctx, aB.slice(0, 6), col, core, w, 0.9);
-    A.pencil(ctx, lB, col, core, w);
+    const OF = look.outfit || {}, sway = Math.sin((f.clock || 0) * 7) * 1.1 + (f.tailV || 0) * 2;
+    const cloth = (seg, c, lw) => { ctx.strokeStyle = c; ctx.lineWidth = lw; ctx.lineCap = 'round'; ctx.globalAlpha = 0.96; ctx.beginPath(); ctx.moveTo(seg[0], seg[1]); ctx.lineTo(seg[2], seg[3]); ctx.stroke(); ctx.globalAlpha = 1; };
+    const foot = (leg2) => { ctx.strokeStyle = look.shoe || C.INK; ctx.lineWidth = 2.7; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(leg2[4], leg2[5]); ctx.lineTo(leg2[4] + 3.5, leg2[5] + 0.4); ctx.stroke(); };
+    const band = (a) => { if (!look.wrist) return; const bx = a[2] + (a[4] - a[2]) * 0.62, by = a[3] + (a[5] - a[3]) * 0.62; cloth([bx, by, a[4], a[5]], look.wrist, w + 1.1); };
+    if (OF.coat) {                                                               /* coat tails flap behind the legs */
+      ctx.fillStyle = OF.coat; ctx.strokeStyle = C.INK; ctx.lineWidth = 0.6;
+      ctx.beginPath(); ctx.moveTo(hx - 0.5, hy - 6); ctx.lineTo(hx - 6.5 - sway, hy + 10); ctx.lineTo(hx - 2.2, hy + 11.5); ctx.lineTo(hx + 1.8, hy + 9); ctx.lineTo(hx + 1.2, hy - 6); ctx.closePath(); ctx.fill(); ctx.stroke();
+    }
+    A.pencil(ctx, aB.slice(0, 6), col, core, w, 0.9); band(aB);
+    A.pencil(ctx, lB, col, core, w); foot(lB);
+    if (OF.pants) cloth(lB.slice(0, 4), OF.pants, w + 1.2);
     A.pencil(ctx, [hx, hy, tx, ty], col, core, w + 0.5);
+    if (OF.top) {
+      cloth([hx + Math.sin(lean) * 2.5, hy - Math.cos(lean) * 2.5, hx + Math.sin(lean) * 11.4, hy - Math.cos(lean) * 11.4], OF.top, w + 1.7);
+      if (OF.stripes) { ctx.strokeStyle = OF.stripes; ctx.lineWidth = 0.9; ctx.beginPath(); for (let k = 4.5; k < 11; k += 2.6) { const px = hx + Math.sin(lean) * k, py = hy - Math.cos(lean) * k; ctx.moveTo(px - 2.2, py); ctx.lineTo(px + 2.2, py); } ctx.stroke(); }
+      if (OF.tie) { ctx.strokeStyle = OF.tie; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.moveTo(hx + Math.sin(lean) * 11.6, hy - Math.cos(lean) * 11.6); ctx.lineTo(hx + Math.sin(lean) * 6.6 + 0.6, hy - Math.cos(lean) * 6.6); ctx.stroke(); }
+    }
+    if (look.scarf) {                                                           /* the hero's scarf streams out behind him */
+      ctx.strokeStyle = look.scarf; ctx.lineWidth = 2.1; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(tx, ty - 1.2); ctx.quadraticCurveTo(tx - 5, ty + 0.4 + sway * 0.6, tx - 11, ty + 2 + sway * 1.5); ctx.stroke();
+      ctx.lineWidth = 1.7; ctx.beginPath(); ctx.moveTo(tx, ty - 0.6); ctx.quadraticCurveTo(tx - 5, ty - 1.4 - sway * 0.4, tx - 10, ty - 0.4 - sway); ctx.stroke();
+    }
     if (look.props && look.props.indexOf('vest') >= 0) {
       ctx.strokeStyle = '#1d1c1a'; ctx.lineWidth = 4.6; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(hx + Math.sin(lean) * 3, hy - Math.cos(lean) * 3); ctx.lineTo(hx + Math.sin(lean) * 11, hy - Math.cos(lean) * 11); ctx.stroke();
       ctx.fillStyle = '#1d1c1a'; ctx.beginPath(); ctx.moveTo(shx - 3.5, shy - 0.5); ctx.lineTo(shx - 0.5, shy - 4); ctx.lineTo(shx + 3.5, shy - 0.5); ctx.closePath(); ctx.fill();
       ctx.strokeStyle = '#d9d2c0'; ctx.lineWidth = 0.7; ctx.beginPath(); ctx.moveTo(hx + Math.sin(lean) * 4, hy - Math.cos(lean) * 4); ctx.lineTo(hx + Math.sin(lean) * 10, hy - Math.cos(lean) * 10); ctx.stroke();
     }
     if (look.props && look.props.indexOf('belt') >= 0) { ctx.strokeStyle = '#1d1c1a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(hx - 2.4, hy - 1.2); ctx.lineTo(hx + 2.4, hy - 1.2); ctx.stroke(); }
-    A.pencil(ctx, lF, col, core, w);
+    A.pencil(ctx, lF, col, core, w); foot(lF);
+    if (OF.pants) cloth(lF.slice(0, 4), OF.pants, w + 1.2);
     head(ctx, hdx, hdy, look, col, core, f);
-    A.pencil(ctx, aF.slice(0, 6), col, core, w);
+    A.pencil(ctx, aF.slice(0, 6), col, core, w); band(aF);
     if (f.weapon) {
       ctx.save(); ctx.translate(aF[4], aF[5]); ctx.rotate(-((aF[6] + (pose.wRot || 0)) * D));
       weaponShape(ctx, f.weapon.type, f, pose);
@@ -417,6 +452,29 @@
     ctx.beginPath(); ctx.arc(aB[4], aB[5], gr, 0, 6.3); ctx.fill();
     if (glove) { ctx.strokeStyle = C.INK; ctx.lineWidth = 0.7; ctx.beginPath(); ctx.arc(aF[4], aF[5], gr, 0, 6.3); ctx.stroke(); ctx.beginPath(); ctx.arc(aB[4], aB[5], gr, 0, 6.3); ctx.stroke(); }
     ctx.restore();
+  };
+
+  /* a pencil swoosh behind a swinging fist, foot or weapon: kind 'punch' | 'kick' | 'bat' | 'spin', u = 0..1 through the swing */
+  A.swish = function (ctx, f, camX, kind, reach, u) {
+    const S = f.look.scale || 1, dir = f.face, cx = f.x - camX + dir * 3, cy = f.y - f.z - (kind === 'kick' ? 13 : kind === 'bat' ? 32 : 24) * S;
+    let a0, a1, r = reach * 0.86;
+    if (kind === 'punch') { a0 = -50; a1 = 22; r *= 0.9; } else if (kind === 'kick') { a0 = 62; a1 = -30; } else if (kind === 'bat') { a0 = -150; a1 = 30; r *= 0.95; } else { a0 = 0; a1 = 360; r = reach * 0.75; }
+    const k = U.clamp(u * 1.4, 0, 1), fade = U.clamp(1.6 - u, 0, 1);
+    ctx.save(); ctx.translate(cx, cy); ctx.scale(dir, 1); ctx.lineCap = 'round'; ctx.strokeStyle = C.INK;
+    for (let i = 0; i < 3; i++) {
+      const rr = r - i * 2.4, s0 = a0 + (a1 - a0) * Math.max(0, k - 0.5 - i * 0.08), s1 = a0 + (a1 - a0) * k;
+      ctx.globalAlpha = (0.5 - i * 0.14) * fade; ctx.lineWidth = 2 - i * 0.5;
+      ctx.beginPath(); ctx.arc(0, 0, rr, s0 * D, s1 * D, a1 < a0); ctx.stroke();
+    }
+    ctx.restore(); ctx.globalAlpha = 1;
+  };
+  /* three little stars circling a stunned head */
+  A.dizzy = function (ctx, x, y, t) {
+    for (let i = 0; i < 3; i++) {
+      const a = t * 7 + i * 2.094, px = x + Math.cos(a) * 7, py = y + Math.sin(a) * 2.2;
+      ctx.save(); ctx.translate(px, py); ctx.rotate(a); ctx.fillStyle = '#ffd23a'; ctx.strokeStyle = C.INK; ctx.lineWidth = 0.7; ctx.beginPath();
+      for (let k = 0; k < 10; k++) { const rr = k % 2 ? 1.2 : 2.8, aa = k * Math.PI / 5; ctx.lineTo(Math.cos(aa) * rr, Math.sin(aa) * rr); } ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+    }
   };
 
   A.shadow = function (ctx, f, camX) {

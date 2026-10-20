@@ -66,6 +66,12 @@
     if (be) enemyBar(ctx, be.def.name, be.hp / be.maxhp, C.W - 10, 42, be.def.boss ? 110 : 70);
 
     if (p.state === 'grabbed') label(ctx, 'MASH BUTTONS!', p.x - g.camX, p.y - 62, 10, C.RED, 'center');
+    /* combo counter */
+    if (g.combo && g.combo.n >= 2 && g.combo.t > 0) {
+      const n = g.combo.n, sz = Math.min(18, 11 + n), jig = g.combo.pop > 0 ? 1 + g.combo.pop * 2 : 1;
+      ctx.save(); ctx.translate(10, 62); ctx.rotate(-0.05); ctx.scale(jig, jig);
+      label(ctx, n + ' HIT COMBO!', 0, 0, sz, n >= 5 ? C.RED : C.BLUE_D, 'left'); ctx.restore();
+    }
     /* GO arrow */
     if (g.goT > 0 && Math.floor(g.goT * 2.6) % 2 === 0 && g.mode === 'play') {
       const x = C.W - 54, y = 108;

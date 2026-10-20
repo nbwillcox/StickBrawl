@@ -27,6 +27,23 @@
   FX.text = function (x, y, str, col, size) {
     FX.texts.push({ x, y, str, col: col || C.INK, size: size || 8, t: 0, life: 0.9 });
   };
+  /* comic-book impact word: pops in big, wobbles, fades */
+  FX.word = function (x, y, str, col, size) {
+    if (FX.texts.length > 14) return;
+    FX.texts.push({ x, y, str, col: col || C.INK, size: size || 11, t: 0, life: 0.62, pop: true, rot: U.rand(-0.35, 0.35) });
+  };
+  /* an expanding pencil ring on the floor (slams, heavy landings) */
+  FX.ring = function (x, y, r0, r1, life) {
+    if (FX.parts.length < MAX) FX.parts.push({ k: 'ring', x, y, z: 0, vx: 0, vz: 0, life: life || 0.35, t: 0, r0, r1 });
+  };
+  /* speed lines flying away from a heavy impact, dir = -1 / 1 */
+  FX.speed = function (x, y, z, dir) {
+    if (FX.parts.length < MAX) FX.parts.push({ k: 'sline', x, y, z, vx: 0, vz: 0, life: 0.16, t: 0, dir, seed: Math.random() * 6 });
+  };
+  /* little stars drifting up (dizzy, knockouts) */
+  FX.stars = function (x, y, z, n) {
+    for (let i = 0; i < n && FX.parts.length < MAX; i++) FX.parts.push({ k: 'star', x: x + U.rand(-7, 7), y, z: z + U.rand(0, 8), vx: U.rand(-14, 14), vz: U.rand(22, 40), life: U.rand(0.5, 0.8), t: 0, a: U.rand(0, 6.3), va: U.rand(-5, 5) });
+  };
 
   FX.update = function (dt) {
     FX.shake = Math.max(0, FX.shake - dt * 14);
@@ -41,7 +58,7 @@
     for (let i = FX.decals.length - 1; i >= 0; i--) { FX.decals[i].t += dt; if (FX.decals[i].t >= FX.decals[i].life) FX.decals.splice(i, 1); }
     for (let i = FX.texts.length - 1; i >= 0; i--) {
       const t = FX.texts[i];
-      t.t += dt; t.y -= dt * 14;
+      t.t += dt; t.y -= dt * (t.pop ? 7 : 14);
       if (t.t >= t.life) FX.texts.splice(i, 1);
     }
   };
@@ -58,7 +75,18 @@
     const art = A();
     for (const p of FX.parts) {
       const u = p.t / p.life, sx = p.x - camX, sy = p.y - p.z;
-      if (p.k === 'dust') {
+      if (p.k === 'ring') {
+        const r = p.r0 + (p.r1 - p.r0) * U.easeOut(u);
+        ctx.save(); ctx.translate(sx, p.y); ctx.scale(1, 0.3); ctx.strokeStyle = C.INK; ctx.lineWidth = 2.2; ctx.globalAlpha = 0.55 * (1 - u); ctx.beginPath(); ctx.arc(0, 0, r, 0, 6.3); ctx.stroke();
+        ctx.lineWidth = 1.2; ctx.globalAlpha = 0.4 * (1 - u); ctx.beginPath(); ctx.arc(0, 0, r * 0.72, 0, 6.3); ctx.stroke(); ctx.restore();
+      } else if (p.k === 'sline') {
+        ctx.strokeStyle = C.INK; ctx.lineWidth = 1.1; ctx.lineCap = 'round'; ctx.globalAlpha = 0.85 * (1 - u); ctx.beginPath();
+        for (let i = 0; i < 6; i++) { const a = (p.dir > 0 ? 0 : Math.PI) + (i - 2.5) * 0.3 + Math.sin(p.seed + i) * 0.08, r0 = 7 + u * 8, r1 = r0 + 12 + (i % 3) * 5; ctx.moveTo(sx + Math.cos(a) * r0, sy + Math.sin(a) * r0 * 0.9); ctx.lineTo(sx + Math.cos(a) * r1, sy + Math.sin(a) * r1 * 0.9); }
+        ctx.stroke();
+      } else if (p.k === 'star') {
+        ctx.save(); ctx.translate(sx, sy); ctx.rotate(p.a + p.t * p.va); ctx.globalAlpha = 1 - u * u; ctx.fillStyle = '#ffd23a'; ctx.strokeStyle = C.INK; ctx.lineWidth = 0.8; ctx.beginPath();
+        for (let i = 0; i < 10; i++) { const rr = i % 2 ? 1.5 : 3.4, aa = i * Math.PI / 5; ctx.lineTo(Math.cos(aa) * rr, Math.sin(aa) * rr); } ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+      } else if (p.k === 'dust') {
         ctx.strokeStyle = C.INK; ctx.globalAlpha = 0.45 * (1 - u); ctx.lineWidth = 0.9;
         const r = p.r * (0.6 + u);
         ctx.beginPath(); ctx.arc(sx, sy, r, 0.4, 5.4); ctx.stroke();
@@ -80,6 +108,14 @@
       const u = t.t / t.life;
       ctx.globalAlpha = u > 0.7 ? 1 - (u - 0.7) / 0.3 : 1;
       ctx.font = '800 ' + t.size + 'px ' + art.FONT; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      if (t.pop) {
+        const sc = 1 + 0.7 * Math.max(0, 1 - t.t / 0.1) + Math.sin(t.t * 40) * 0.03;
+        ctx.save(); ctx.translate(t.x - camX, t.y); ctx.rotate(t.rot); ctx.scale(sc, sc);
+        ctx.lineJoin = 'round'; ctx.lineWidth = 5; ctx.strokeStyle = '#ffd23a'; ctx.strokeText(t.str, 0, 0);
+        ctx.lineWidth = 2.4; ctx.strokeStyle = C.INK; ctx.strokeText(t.str, 0, 0);
+        ctx.fillStyle = t.col; ctx.fillText(t.str, 0, 0); ctx.restore();
+        continue;
+      }
       ctx.lineWidth = 2.5; ctx.strokeStyle = 'rgba(241,233,212,0.9)'; ctx.strokeText(t.str, t.x - camX, t.y);
       ctx.fillStyle = t.col; ctx.fillText(t.str, t.x - camX, t.y);
     }
