@@ -53,7 +53,7 @@
     Game.stage = Math.min(G.debug.level || 0, G.level.list.length - 1);
     Game.reset(false);
     Game.onOver = (v) => { M.mode = 'over'; A.stopMusic(); UI.showGameOver(Game.score, Game.stage + 1, v); };
-    M.mode = 'play';
+    M.mode = 'play'; A.demo = false;
     UI.hideAll();
     A.music(Game.level.music);
     A.sfx.start();
@@ -63,7 +63,7 @@
     Game.onOver = null;
     Game.reset(true);
     titleScene();
-    M.mode = 'title';
+    M.mode = 'title'; A.demo = true;
     UI.lastIdx = -1;
     UI.show('title');
     if (A.ctx && A.ctx.state === 'suspended') A.ctx.resume();
@@ -78,6 +78,20 @@
     a.face = b.face = -1; a.entered = b.entered = true;
     Game.enemies.push(a, b);
     Game.camX = 0;
+  }
+  /* the end-of-game picture behind the score screen: a cheering hero or a flattened one */
+  let tabT = 0;
+  M.tableau = function (win) {
+    Game.enemies.length = 0; Game.projs.length = 0; Game.items.length = 0; Game.props.length = 0;
+    const p = Game.player; p.x = Game.camX + 86; p.y = 236; p.face = 1; p.weapon = null; p.z = 0;
+    Game.tab = win ? 'win' : 'lose'; tabT = 0;
+    if (win) { p.state = 'idle'; p.poseOverride = 'cheer'; p.hp = p.maxhp; p.inv = 0; }
+    else { p.state = 'dead'; p.deadT = 0; }
+  };
+  function tableauTick(dt) {
+    tabT += dt; const p = Game.player; p.clock += dt;
+    if (Game.tab === 'win') { p.z = Math.abs(Math.sin(tabT * 5)) * 7; if (Math.random() < dt * 8) FX.stars(p.x + U.rand(-50, 50), p.y, 30 + U.rand(0, 40), 1); }
+    else if (Game.tab === 'lose' && Math.random() < dt * 1.6) FX.stars(p.x, p.y, 10, 1);
   }
   M.pause = function () {
     if (M.mode !== 'play') return;
@@ -109,7 +123,8 @@
         Game.update(STEP);
         acc -= STEP;
       }
-    } else { I.takePause(); acc = 0; if (M.mode === 'title') { for (const f of Game.fighters()) f.clock += dt; } }
+    } else if (M.mode === 'title') { I.takePause(); acc += dt; while (acc >= STEP) { Game.demoUpdate(STEP); acc -= STEP; } }
+    else { I.takePause(); acc = 0; if (M.mode === 'over') { FX.update(dt); tableauTick(dt); } }
     render();
   }
 
@@ -118,7 +133,7 @@
   I.bind(canvas);
 
   function boot() {
-    UI.init(M);
+    UI.init(M); A.demo = true;
     Game.reset(true);
     titleScene();
     resize();

@@ -38,6 +38,8 @@ Enemies fight like you: a telegraphed opener, then a 2 or 3 hit punch or kick co
 
 Crates can be picked up and thrown (enemies throw them too); oil drums can be smashed and often hide a weapon or food. Enemies come in armed (not bosses), so the weapons you use are mostly ones you take off them: knock a weapon out of a fighter's hands and pick it up. Weapons wear out after a number of hits. Enemies pick them up too, and drop them when knocked down.
 
+Chain 3 or more hits within a second and a half for a combo bonus. Menus can be driven with the up / down arrows (or a gamepad d-pad) and Enter / A.
+
 ## Rules
 
 6 hearts per life, 3 lives, no continues. Extra lives at 20,000 and 50,000 points. Apples and chickens heal. The clock counts down from 300.

@@ -86,8 +86,10 @@
     if (g.introT < 3 && g.mode === 'play') {
       const u = g.introT / 3, a = u < 0.15 ? u / 0.15 : u > 0.8 ? (1 - u) / 0.2 : 1;
       ctx.globalAlpha = U.clamp(a, 0, 1);
+      plate(ctx, C.W / 2 - 124, 82, 248, 60);
       label(ctx, g.level.sub, C.W / 2, 96, 12, '#6d6a5d', 'center');
       label(ctx, g.level.name, C.W / 2, 118, 26, C.INK, 'center');
+      ctx.strokeStyle = C.RED; ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(C.W / 2 - 92, 134); ctx.lineTo(C.W / 2 + 92, 133); ctx.stroke();
       ctx.globalAlpha = 1;
     }
     /* boss warning */

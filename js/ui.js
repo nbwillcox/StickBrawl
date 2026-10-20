@@ -93,6 +93,23 @@
     if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
   };
   UI.isOpen = () => UI.cur !== null;
+  /* menu navigation with the keyboard (up / down) and a gamepad (d-pad + A, see input.js) */
+  UI.nav = function (d) {
+    const sec = UI.cur && $(UI.cur); if (!sec) return;
+    const els = [...sec.querySelectorAll('button:not(:disabled), input')].filter((el) => el.offsetParent !== null);
+    if (!els.length) return;
+    let i = els.indexOf(document.activeElement); i = i < 0 ? 0 : (i + d + els.length) % els.length;
+    els[i].focus(); if (A.sfx.tick) A.sfx.tick();
+  };
+  UI.navKey = function (code) {
+    if (!UI.isOpen() || G.input.capture || G.input.padCapture) return false;
+    if (code === 'ArrowDown' || code === 'ArrowUp') { UI.nav(code === 'ArrowDown' ? 1 : -1); return true; }
+    return false;
+  };
+  UI.padPress = function (which) {
+    if (which === 'a') { const el = document.activeElement; if (el && el.tagName === 'BUTTON') el.click(); }
+    else UI.nav(which === 'down' ? 1 : -1);
+  };
 
   UI.renderScores = function () {
     const ol = $('scoreList');
@@ -118,6 +135,7 @@
     $('goButtons').classList.toggle('hidden', q);
     $('goName').value = G.scores.lastName || '';
     UI.pending = { score, level };
+    if (G.main && G.main.tableau) G.main.tableau(!!victory);
     UI.show('gameover');
   };
 
@@ -145,8 +163,9 @@
     click('btnPauseSettings', () => { UI.back = 'pause'; UI.show('settings'); });
     click('btnQuit', () => M.toTitle());
     click('btnSettingsBack', () => UI.show(UI.back || 'title'));
-    click('btnControls', () => UI.show('controls'));
-    click('btnKeysBack', () => UI.show('settings'));
+    click('btnControls', () => { UI.ctlBack = 'settings'; UI.show('controls'); });
+    click('btnPauseControls', () => { UI.back = 'pause'; UI.ctlBack = 'pause'; UI.show('controls'); });
+    click('btnKeysBack', () => UI.show(UI.ctlBack || 'settings'));
     click('btnKeysReset', () => { S.keys = Object.assign({}, G.C.KEYS); S.pad = Object.assign({}, G.C.PAD); S.save(); G.input.rebuild(); UI.renderKeys(); UI.updateHints(); });
     click('btnScoresPlay', () => M.startGame());
     click('btnScoresBack', () => UI.show('title'));

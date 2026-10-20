@@ -45,6 +45,7 @@
     nu2w: P({ lean: 4, aF: [96, 70], aB: [40, 108], lF: [20, 24], lB: [-26, 16], wSwA: 20 }),
     nu2s: P({ lean: 20, aF: [60, 24], aB: [36, 118], lF: [40, 30], lB: [-34, 12], wSwA: 270 }),
     slamS: P({ lean: 34, hipH: 12, aF: [40, 10], aB: [34, 14], lF: [40, 60], lB: [-30, 56] }),
+    cheer: P({ lean: -6, aF: [168, 12], aB: [158, 16], lF: [14, 22], lB: [-16, 20] }),
     carry: P({ lean: -4, aF: [168, 10], aB: [160, 14], lF: [16, 20], lB: [-20, 16] }),
     hopw: P({ lean: 10, hipH: 14, aF: [60, 80], aB: [30, 90], lF: [50, 100], lB: [-30, 80] }),
   };
@@ -440,6 +441,7 @@
 
     /* ---------- pose ---------- */
     pose() {
+      if (this.poseOverride) return POSES[this.poseOverride];
       let p;
       const ws = this.weapon ? WEAPON_POSE[this.weapon.type] : null;
       const idle = () => POSES[ws || 'idle'];

@@ -256,5 +256,10 @@
     else if (name === 'over') { [N.A4, N.F4, N.D4, N.A3].forEach((f, i) => tone(f, 0.3, 'p25', 0.12, 0, i * 0.26)); tone(N.A2, 1.2, 'triangle', 0.2); }
   };
 
+  /* attract mode behind the title screen is silent; the menu's own sounds still play */
+  const UI_SFX = { select: 1, start: 1, pickup: 1, tick: 1 };
+  for (const k of Object.keys(A.sfx)) { const fn = A.sfx[k]; A.sfx[k] = function () { if (A.demo && !UI_SFX[k]) return undefined; return fn.apply(this, arguments); }; }
+  A.demo = false;
+
   G.audio = A;
 })((window.SGS = window.SGS || {}));

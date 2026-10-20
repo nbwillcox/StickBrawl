@@ -303,6 +303,47 @@
     }
   };
 
+  /* ---------- attract mode: the hero spars with a couple of thugs behind the title screen ---------- */
+  const bot = { seq: [], gap: 0, wait: 0.6, air: false, hold: { punch: 0, kick: 0 }, spawnT: 0 };
+  Game.demoUpdate = function (dt) {
+    const p = Game.player;
+    if (FX.hitstop > 0) { FX.hitstop -= dt; return; }
+    FX.update(dt);
+    p.hp = p.maxhp; p.inv = 0;
+    bot.spawnT += dt;
+    if (Game.enemies.length < 2 && bot.spawnT > 1.1) { bot.spawnT = 0; spawnEnemy({ k: U.pick(['thug', 'masked', 'thug', 'ninja']), side: Math.random() < 0.5 ? 'l' : 'r' }); }
+    const it = p.intent;
+    it.dx = it.dy = 0; it.jump = false;
+    bot.hold.punch -= dt; bot.hold.kick -= dt;
+    it.punch = bot.hold.punch > 0; it.kick = bot.hold.kick > 0;
+    it.use = (k) => { it[k] = false; if (bot.hold[k] !== undefined) bot.hold[k] = 0; };
+    let t = null, bd = 1e9;
+    for (const e of Game.enemies) if (e.hp > 0 && e.state !== 'dead' && e.entered) { const d = Math.abs(e.x - p.x) + Math.abs(e.y - p.y) * 2; if (d < bd) { bd = d; t = e; } }
+    bot.wait -= dt; bot.gap -= dt;
+    const ready = p.state === 'idle' || p.state === 'walk';
+    Game.items.length = 0;                                                   /* no drops piling up behind the menu */
+    if (ready && (!t || bot.wait > 0.5)) { const hx = 95 - p.x; if (Math.abs(hx) > 40) it.dx = U.sign(hx); }       /* drift back to the left side, clear of the menu */
+    if (t) {
+      const dx = t.x - p.x, dy = t.y - p.y, adx = Math.abs(dx);
+      if (p.state === 'jump' && bot.air) { bot.hold.kick = 0.16; bot.air = false; }
+      else if (adx > 24 || Math.abs(dy) > 6) {
+        if (ready) {
+          it.dx = adx > 24 ? U.sign(dx) : 0; it.dy = Math.abs(dy) > 5 ? U.sign(dy) : 0;
+          if (adx > 80 && bot.wait <= 0 && Math.random() < 0.012) { it.jump = true; bot.air = true; bot.wait = 1.2; }
+        }
+      } else if (ready && p.face !== U.sign(dx)) { it.dx = U.sign(dx); }
+      else if (bot.wait <= 0 && (ready || p.state === 'atk')) {
+        if (!bot.seq.length) bot.seq = U.pick([['punch', 'punch', 'punch'], ['kick', 'kick', 'kick', 'kick'], ['punch', 'punch', 'kick'], ['punch', 'punch', 'punch', 'kick'], ['punch']]).slice();
+        if (bot.gap <= 0) { bot.hold[bot.seq.shift()] = 0.16; bot.gap = 0.17; if (!bot.seq.length) bot.wait = U.rand(0.5, 1.1); }
+      }
+    }
+    p.update(dt, Game);
+    for (const e of Game.enemies) { E.think(e, Game, dt); e.update(dt, Game); }
+    for (let i = Game.enemies.length - 1; i >= 0; i--) { const e = Game.enemies[i]; if (e.state === 'dead' && e.deadT > 0.9) { E.release(e); Game.enemies.splice(i, 1); } }
+    separate(dt);
+    updateProjs(dt);
+  };
+
   function respawn() {
     const p = Game.player;
     p.hp = p.maxhp; p.dying = false; p.killed = false; p.weapon = null;

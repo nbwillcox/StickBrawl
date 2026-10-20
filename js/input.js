@@ -33,6 +33,7 @@
   }
   window.addEventListener('keydown', (e) => {
     if (I.capture) { e.preventDefault(); e.stopPropagation(); if (!e.repeat) I.capture(e.code); return; }
+    if (G.ui && G.ui.isOpen && G.ui.isOpen() && G.ui.navKey(e.code)) { e.preventDefault(); return; }
     if (typing(e.target)) return;
     if (!press(e.code, e.repeat, e.target, e) && G.debugKey && !e.repeat) G.debugKey(e);
   }, true);
@@ -67,6 +68,13 @@
       const b = p.buttons, ax = p.axes, down = (i) => !!(b[i] && b[i].pressed);
       if (I.padCapture) {
         for (let i = 0; i < b.length; i++) { const d = down(i); if (d && !prev[i]) { prev[i] = true; const cb = I.padCapture; I.padCapture = null; cb(i); return; } prev[i] = d; }
+        return;
+      }
+      if (G.ui && G.ui.isOpen && G.ui.isOpen()) {                 /* a menu is open: d-pad / stick up and down move the focus, A presses, Start still pauses / resumes */
+        const up = down(12) || (ax.length > 1 && ax[1] < -0.5), dn = down(13) || (ax.length > 1 && ax[1] > 0.5), a = down(0), st = down(G.settings.pad.pause);
+        if (up && !prev.mu) G.ui.padPress('up'); if (dn && !prev.md) G.ui.padPress('down'); if (a && !prev.ma) G.ui.padPress('a'); if (st && !prev.mst) I._pause = true;
+        prev.mu = up; prev.md = dn; prev.ma = a; prev.mst = st;
+        for (let i = 0; i < b.length; i++) prev[i] = down(i);
         return;
       }
       let x = 0, y = 0;

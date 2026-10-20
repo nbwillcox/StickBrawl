@@ -125,7 +125,7 @@
     I.dx = Math.abs(ddx) > tolX ? U.sign(ddx) : 0;
     I.dy = Math.abs(ddy) > 2.5 ? U.sign(ddy) : 0;
     /* a fighter that is too close and has no token backs off a little */
-    if (!ai.tok && adx < ai.ringR - 14) I.dx = -U.sign(dxp) || I.dx;
+    if (!ai.tok && e.entered && adx < ai.ringR - 14) I.dx = -U.sign(dxp) || I.dx;
 
     if (ai.tok && ai.cd <= 0) {
       if (e.weapon && e.weapon.type === 'knife' && ady < 7 && adx > 90 && adx < 190 && Math.random() < 0.03) { I.act = 'throwW'; ai.attacking = true; ai.cd = U.rand(e.def.cool[0], e.def.cool[1]); return; }
